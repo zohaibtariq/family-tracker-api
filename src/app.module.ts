@@ -5,7 +5,6 @@ import { UsersModule } from './users/users.module';
 import { validate } from './environment.validation';
 import { CountriesModule } from './countries/countries.module';
 import { DatabaseModule } from './database/database.module';
-// import { AuthModule } from './auth/auth.module';
 import { DatabaseTestingModule } from './database/database-testing.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
@@ -21,10 +20,7 @@ import { SettingsModule } from './settings/settings.module';
 import { ResponseModule } from './response/response.module';
 import { ScreensModule } from './screens/screens.module';
 import { LanguagesModule } from './languages/languages.module';
-// import { RedisCacheModule } from './redis/redis.module';
-// import { RedisModule } from 'nestjs-redis';
-// import { RedisModule } from './redis/redis.module';
-import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 
 @Module({
   imports: [
@@ -33,22 +29,22 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
       isGlobal: true, // IMPORTANT:  should be available globally in our case
       envFilePath: '.env', //IMPORTANT: since we have .env
     }),
-    RedisModule.forRoot({
-      config: {
-        host: 'localhost',
-        port: 6379,
-        password: '',
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (
+        configService: ConfigService,
+      ): Promise<RedisModuleOptions> => {
+        return {
+          config: {
+            host: configService.get<string>('REDIS_HOST'),
+            port: configService.get<number>('REDIS_PORT'),
+            password: configService.get<string>('REDIS_PASSWORD'),
+            db: configService.get<number>('REDIS_DB'),
+          },
+        };
       },
     }),
-    // RedisModule.forRootAsync({
-    //   useFactory: (configService: ConfigService) => ({
-    //     host: configService.get<string>('REDIS_HOST'),
-    //     port: configService.get<number>('REDIS_PORT'),
-    //     password: configService.get<string>('REDIS_PASSWORD'),
-    //     db: configService.get<number>('REDIS_DB'),
-    //   }),
-    //   inject: [ConfigService],
-    // }),
     I18nModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         fallbackLanguage: configService.getOrThrow('FALLBACK_LANGUAGE'),
@@ -67,7 +63,6 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
     }),
     process.env.NODE_ENV === 'test' ? DatabaseTestingModule : DatabaseModule,
     DatabaseModule,
-    // AuthModule,
     UsersModule,
     CountriesModule,
     DatabaseModule,
@@ -76,16 +71,8 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
     ResponseModule,
     ScreensModule,
     LanguagesModule,
-    // RedisModule,
-    // RedisCacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-
-// export class AppModule implements NestModule {
-//   configure(consumer: MiddlewareConsumer) {
-//     consumer.apply(TokenBlacklistMiddleware).forRoutes('*'); // Apply to all routes
-//   }
-// }
