@@ -1,0 +1,7 @@
+{
+  "OTP_VERIFICATION_SUCCESS": "EN: OTP verification has been successful.",
+  "PHONE_NUMBER_NOT_FOUND": "EN: User not found.",
+  "OTP_EXPIRY_SEC_NOT_DEFINED": "EN: OTP expiry seconds not defined in settings.",
+  "OTP_ERROR_WRONG_OR_EXPIRED": "EN: OTP is incorrect or expired (entered after \"{{OTP_EXPIRY_SECONDS}}\" seconds).",
+  "OTP_VERIFIED": "EN: OTP has been verified."
+}
