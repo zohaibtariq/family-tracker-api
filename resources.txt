@@ -1,0 +1,2 @@
+https://romain-kelifa.medium.com/definitive-guide-for-nest-js-guards-and-passport-57915cfb6fd
+https://github.com/Roms1383/definitive-guide-nestjs-guard-passport?source=post_page-----57915cfb6fd--------------------------------
