@@ -11,6 +11,18 @@ export class User {
   phoneNumber: string;
 
   @Prop()
+  emergencyNumber: string;
+
+  @Prop()
+  firstName: string;
+
+  @Prop()
+  lastName: string;
+
+  @Prop()
+  avatar: string;
+
+  @Prop()
   refreshToken: string;
 
   @Prop({ default: 'user' })

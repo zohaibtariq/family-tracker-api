@@ -2,9 +2,9 @@ import { Body, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
 import { Roles } from '../otp/decoraters/roles.decorator';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Request } from 'express';
 import { RolesGuard } from '../otp/guards/roles.guard';
 import { AccessTokenGuard } from '../otp/guards/accessToken.guard';
+import { AuthenticatedRequestUser } from './interfaces/request-user-interface';
 
 @UseGuards(AccessTokenGuard, RolesGuard) // @Roles() cannot be defined on top they are function level while RolesGuard can be defined over top and as per current logic if any function has no roles defined means it is a public route means accessible to everyone.
 @Controller('users')
@@ -44,13 +44,14 @@ export class UsersController {
   update(
     // @Param('id') id: Types.ObjectId,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() req: Request,
+    @Req() req: AuthenticatedRequestUser,
   ) {
-    console.log('REQ USER');
-    console.log(req.user);
-    console.log('PATCH USER');
-    console.log(updateUserDto);
-    // return this.usersService.update(id, updateUserDto, { new: true });
+    const userId: any = req.user.sub;
+    // console.log('REQ USER');
+    // console.log(req.user);
+    // console.log('PATCH USER');
+    // console.log(updateUserDto);
+    return this.usersService.update(userId, updateUserDto, { new: true });
   }
 
   // @Delete(':id')

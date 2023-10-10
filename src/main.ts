@@ -4,9 +4,11 @@ import { DatabaseSeeder } from './database/database.seeder';
 import { GenericExceptionFilter } from './exceptions/generic-exception.filter';
 import { ResponseService } from './response/response.service';
 import * as passport from 'passport';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalFilters(new GenericExceptionFilter(new ResponseService()));
   await app.get(DatabaseSeeder).seedDatabase();
   app.use(passport.initialize());
