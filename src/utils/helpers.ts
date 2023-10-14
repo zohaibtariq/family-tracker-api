@@ -1,3 +1,20 @@
+import { diskStorage } from 'multer';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { extname } from 'path';
+import * as fs from 'fs';
+
+export const MAX_FILE_SIZE_IN_BYTES = 20 * 1024 * 1024;
+
+export const VALID_IMAGE_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/bmp',
+  'image/webp',
+  'image/svg+xml',
+];
+
 export function addMinutesToUnixTimestamp(timestamp, minutesToAdd) {
   // Convert minutes to milliseconds (1 minute = 60,000 milliseconds)
   const millisecondsToAdd = minutesToAdd * 60000;
@@ -74,4 +91,144 @@ export function replacePlaceholders(inputString, placeholders) {
     },
   );
   return replacedString;
+}
+
+export const createFolder = (folderPath) => {
+  try {
+    // Check if the folder exists
+    if (!fs.existsSync(folderPath)) {
+      // If the folder doesn't exist, create it
+      fs.mkdirSync(folderPath, { recursive: true });
+      return 'Folder created successfully';
+    } else {
+      return 'Folder already exists';
+    }
+  } catch (error) {
+    return `Error creating folder: ${error.message}`;
+  }
+};
+
+export const deleteAllFromDestExcludingOne = (directoryPath, fileToExclude) => {
+  try {
+    // Read the contents of the directory
+    const filesInDirectory = fs.readdirSync(directoryPath);
+
+    // Filter out the file to exclude
+    const filesToDelete = filesInDirectory.filter(
+      (file) => file !== fileToExclude,
+    );
+
+    // Delete each file in the directory
+    for (const file of filesToDelete) {
+      const filePath = `${directoryPath}/${file}`;
+      fs.unlinkSync(filePath);
+      // console.log(`Deleted: ${file}`);
+    }
+
+    // console.log(`All files deleted except the ${fileToExclude}`);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+  }
+};
+
+export const identifyImageMimeType = (filePath) => {
+  // Define file signatures for common image types
+  const fileSignatures = {
+    '\xFF\xD8\xFF': 'image/jpeg',
+    '\x89PNG\x0D\x0A\x1A\x0A': 'image/png',
+    GIF89a: 'image/gif',
+    BM: 'image/bmp',
+    'RIFF....WEBP': 'image/webp',
+    '<svg': 'image/svg+xml',
+    WEBP: 'image/webp',
+    RIF: 'image/webp',
+    RIFF: 'image/webp',
+  };
+
+  const fileBuffer = fs.readFileSync(filePath);
+
+  // Compare the first few bytes of the file to file signatures
+  for (const signature in fileSignatures) {
+    const binaryFile = fileBuffer.slice(0, signature.length).toString('binary');
+    // console.log('BINARY FILE');
+    // console.log(binaryFile);
+    if (binaryFile === signature) {
+      return fileSignatures[signature];
+    }
+  }
+
+  // If no matching signature is found, return an unknown MIME type
+  return 'application/octet-stream';
+};
+
+export const imageFileFilter = (req, file, cb) => {
+  // console.log('Uploaded File');
+  // console.log(file);
+  // const fileContent = fs.readFileSync(file.path, 'utf8');
+  // console.log(fileContent);
+  // console.log(VALID_IMAGE_MIME_TYPES.includes(file.mimetype));
+  // console.log(file.originalname.match(/\.(jpg|jpeg|png|gif|webp|svg)$/));
+  // cb(null, true);
+  if (
+    VALID_IMAGE_MIME_TYPES.includes(file.mimetype) &&
+    file.originalname.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)
+  ) {
+    // console.log('Uploaded File Size');
+    // console.log(file.size);
+    // console.log('Allowed File Size');
+    // console.log(MAX_FILE_SIZE_IN_BYTES);
+    //   if (file.size <= MAX_FILE_SIZE_IN_BYTES) { // IMPORTANT: we cannot enable this comment as we don't have file.size value here
+    cb(null, true);
+    //   } else {
+    //     cb(
+    //       new HttpException(
+    //         'File size exceeds the limit',
+    //         HttpStatus.UNPROCESSABLE_ENTITY,
+    //       ),
+    //       false,
+    //     );
+    //   }
+  } else {
+    cb(
+      new HttpException(
+        'File type ' + file.mimetype + ' is not allowed.',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      ),
+      false,
+    );
+  }
+};
+
+export const editFileName = (req, file, callback) => {
+  // console.log(req.user.sub);
+  // const name = file.originalname.split('.')[0];
+  const fileExtName = extname(file.originalname);
+  // const randomName = Array(4)
+  //   .fill(null)
+  //   .map(() => Math.round(Math.random() * 16).toString(16))
+  //   .join('');
+  // let fileName = `${name}-${randomName}${fileExtName}`;
+  const fileName = `${req.user.sub}${fileExtName}`;
+  callback(null, fileName);
+};
+
+export const multerLocalOptionsStorage = diskStorage({
+  // destination: `public/${userId}`,
+  destination: (req: any, file, cb) => {
+    const userId = req.user.sub;
+    const userUploadPath = `public/${userId}/avatar/`;
+    createFolder(userUploadPath);
+    // console.log('AVATAR UPLOADED DIRECTORY');
+    cb(null, userUploadPath);
+  },
+  filename: editFileName,
+});
+
+export const multerLocalOptions = {
+  storage: multerLocalOptionsStorage,
+  fileFilter: imageFileFilter,
+};
+
+export function bytesToMB(bytes) {
+  return bytes / (1024 * 1024);
 }

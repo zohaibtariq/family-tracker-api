@@ -19,7 +19,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
 
   @IsOptional()
   @IsString()
-  avatar: string;
+  avatar: Express.Multer.File;
 
   @Exclude()
   phoneNumber: string;

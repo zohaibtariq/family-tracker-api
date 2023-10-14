@@ -27,7 +27,7 @@ import { MulterModule } from '@nestjs/platform-express';
 @Module({
   imports: [
     // MulterModule.register({
-    //   dest: 'public/avatars',
+    //   dest: 'public',
     // }),
     MulterModule.registerAsync({
       imports: [ConfigModule],
