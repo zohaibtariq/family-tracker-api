@@ -21,9 +21,24 @@ import { ResponseModule } from './response/response.module';
 import { ScreensModule } from './screens/screens.module';
 import { LanguagesModule } from './languages/languages.module';
 import { RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
+    // MulterModule.register({
+    //   dest: 'public',
+    // }),
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        dest: configService.get<string>('AVATAR_UPLOAD_DEST'),
+      }),
+      inject: [ConfigService],
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..'),
+    }),
     ConfigModule.forRoot({
       validate,
       isGlobal: true, // IMPORTANT:  should be available globally in our case

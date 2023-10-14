@@ -18,15 +18,17 @@ export class GenericExceptionFilter implements ExceptionFilter {
     let message = 'Internal Server Error';
     console.log('GENERIC EXCEPTION');
     console.log(exception);
-    // console.log(exception.status);
-    // console.log(exception.response);
-    console.log(exception.getStatus());
-    console.log(exception.getResponse());
+    console.log(exception.status);
+    console.log(exception.response);
+    // console.log(exception.getStatus());
+    // console.log(exception.getResponse());
     // if (exception instanceof HttpException) {
-    status = exception.getStatus();
+    status = exception.status;
     message =
-      exception.getResponse()['message'] ||
-      exception.getResponse() ||
+      (exception.response && exception.response['message']
+        ? exception.response['message']
+        : '') ||
+      exception.response ||
       'An error occurred';
     // }
 

@@ -120,11 +120,8 @@ export class OtpController {
   @Roles('user', 'admin', 'superadmin')
   @UseGuards(AccessTokenGuard, RolesGuard)
   async logout(@Req() req: any, @Res() res: Response) {
-    // TODO:: do not allow request from access token once logged out
     // console.log('POST logout');
     // console.log(req.user);
-
-    // const token = req.headers.authorization?.replace('Bearer ', '');
 
     const token = (
       req.headers as { authorization?: string }
@@ -137,8 +134,7 @@ export class OtpController {
         'revoked',
         'EX',
         this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN_SEC'),
-      ); // Blacklist token for 24 hours
-      // TODO:: set expiry dynamic as of defined in settings
+      ); // Blacklist token for TIME expiry of access token as defined in .env
     }
 
     await this.otpService.logout(req.user['sub']);
