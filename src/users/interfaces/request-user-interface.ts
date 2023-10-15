@@ -1,13 +1,19 @@
 import { Types } from 'mongoose';
 
-export interface RequestUserInterface {
-  role: string;
-  sub: Types.ObjectId;
-  id: Types.ObjectId;
-  iat: number;
-  exp: number;
+export interface AuthorizationHeaderInterface {
+  authorization: string;
 }
 
-export interface AuthenticatedRequestUser {
-  user: RequestUserInterface;
+export interface JWTUserInterface {
+  sub: Types.ObjectId;
+  iat: number;
+  exp: number;
+  id: Types.ObjectId;
+  role: string;
+  refreshToken: string;
+}
+
+export interface RequestUserInterface {
+  user: JWTUserInterface;
+  headers: AuthorizationHeaderInterface;
 }

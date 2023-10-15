@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Patch,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -14,7 +16,7 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RolesGuard } from '../otp/guards/roles.guard';
 import { AccessTokenGuard } from '../otp/guards/accessToken.guard';
-import { AuthenticatedRequestUser } from './interfaces/request-user-interface';
+import { RequestUserInterface } from './interfaces/request-user-interface';
 import { FileInterceptor } from '@nestjs/platform-express'; // import { imageFileFilter, imageStorage } from '../utils/helpers';
 import {
   bytesToMB,
@@ -29,13 +31,27 @@ import {
 import { I18n, I18nContext } from 'nestjs-i18n';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
+import { Response } from 'express';
+import { ResponseService } from '../response/response.service';
 
 // import { FileContentInterceptor } from '../utils/FileContentInterceptor';
 
 @UseGuards(AccessTokenGuard, RolesGuard) // @Roles() cannot be defined on top they are function level while RolesGuard can be defined over top and as per current logic if any function has no roles defined means it is a public route means accessible to everyone.
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly responseService: ResponseService,
+  ) {}
+
+  @Get()
+  @Roles('user', 'admin', 'superadmin')
+  async findAll(@Req() req: RequestUserInterface, @Res() res: Response) {
+    return this.responseService.response(
+      res,
+      await this.usersService.findById(req.user.id),
+    );
+  }
 
   @Patch()
   @Roles('user', 'admin', 'superadmin')
@@ -46,10 +62,11 @@ export class UsersController {
     }),
     // FileContentInterceptor,
   )
-  update(
+  async update(
     // @Param('id') id: Types.ObjectId,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() req: AuthenticatedRequestUser,
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
     @UploadedFile()
     // new ParseFilePipeBuilder()
     //   .addValidator(
@@ -99,9 +116,9 @@ export class UsersController {
         updateUserDto.emergencyCountryCode + updateUserDto.emergencyNumber;
     if (updateUserDto?.emergencyCountryCode)
       delete updateUserDto.emergencyCountryCode; // NOTE: because we don't want to persist country code of emergency number
-    const updatedUser = this.usersService.update(userId, updateUserDto, {
+    const updatedUser = await this.usersService.update(userId, updateUserDto, {
       new: true,
     });
-    return updatedUser;
+    return this.responseService.response(res, updatedUser);
   }
 }

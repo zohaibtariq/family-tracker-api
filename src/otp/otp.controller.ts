@@ -30,6 +30,7 @@ import { ConfigService } from '@nestjs/config';
 import { UserStatus } from '../users/enums/users.status.enum';
 import { ScreensService } from '../screens/screens.service';
 import { ScreenSlug } from '../screens/enums/screens.slugs.enum';
+import { RequestUserInterface } from '../users/interfaces/request-user-interface';
 
 @Controller('otp')
 export class OtpController {
@@ -135,7 +136,7 @@ export class OtpController {
   @Post('logout')
   @Roles('user', 'admin', 'superadmin')
   @UseGuards(AccessTokenGuard, RolesGuard)
-  async logout(@Req() req: any, @Res() res: Response) {
+  async logout(@Req() req: RequestUserInterface, @Res() res: Response) {
     const token = (
       req.headers as { authorization?: string }
     )?.authorization?.replace('Bearer ', '');
@@ -154,7 +155,7 @@ export class OtpController {
   @Get('refresh')
   @Roles('user', 'admin', 'superadmin')
   @UseGuards(RefreshTokenGuard, RolesGuard)
-  async refreshTokens(@Req() req: any, @Res() res: Response) {
+  async refreshTokens(@Req() req: RequestUserInterface, @Res() res: Response) {
     await this.usersService.checkUserStatusByUserId(req.user.id);
     return this.responseService.response(
       res,
