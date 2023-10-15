@@ -19,8 +19,6 @@ import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 import { I18nService } from 'nestjs-i18n';
 
-// import { RedisService } from 'nestjs-redis';
-
 @Injectable()
 export class OtpService {
   constructor(
@@ -33,23 +31,7 @@ export class OtpService {
     @InjectRedis() private readonly redis: Redis, // or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
   ) {}
 
-  // async set(
-  //   key: string,
-  //   value: string,
-  //   expirySeconds: number = 86400,
-  // ): Promise<void> {
-  //   await this.redis.set(key, value, 'EX', expirySeconds);
-  // }
-  //
-  // async get(key: string): Promise<string | null> {
-  //   return this.redis.get(key);
-  // }
-
   async create(userId: mongoose.Types.ObjectId) {
-    // const key = 'yahoo';
-    // const value = 'mahoo';
-    // await this.redis.set(key, value, 'EX', 99999);
-    // console.log(await this.redis.get(key));
     const createOtpData = {
       userId,
       expiry: addSecondsToUnixTimestamp(
@@ -110,7 +92,6 @@ export class OtpService {
     return { status: otp_constants.OTP_VERIFIED, user };
   }
 
-  // async getTokens(userId: string, user: UserDocument) {
   async getTokens(user: UserDocument) {
     // const userId = user._id;
     const User = {
@@ -126,7 +107,6 @@ export class OtpService {
     };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        // { role: user.role, sub: userId },
         { ...User, sub: User.id },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
@@ -136,7 +116,6 @@ export class OtpService {
         },
       ),
       this.jwtService.signAsync(
-        // { role: user.role, sub: userId },
         { ...User, sub: User.id },
         {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
@@ -188,7 +167,6 @@ export class OtpService {
     if (!refreshTokenMatches) {
       throw new ForbiddenException('Access Denied - Refresh Token Not Matched');
     }
-    // const tokens = await this.getTokens(user.id, user);
     const tokens = await this.getTokens(user);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
     return tokens;

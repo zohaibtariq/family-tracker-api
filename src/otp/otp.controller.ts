@@ -31,8 +31,6 @@ import { UserStatus } from '../users/enums/users.status.enum';
 import { ScreensService } from '../screens/screens.service';
 import { ScreenSlug } from '../screens/enums/screens.slugs.enum';
 
-``;
-
 @Controller('otp')
 export class OtpController {
   constructor(
@@ -117,7 +115,6 @@ export class OtpController {
         }),
       );
     const userId = user._id;
-    // const tokens = await this.otpService.getTokens(userId, user);
     const tokens = await this.otpService.getTokens(user);
     await this.usersService.update(userId, { status: UserStatus.VERIFIED }); // NOTE: set user status here with OTP verified, make sure at first line i check for blocked state of user it must not reach here if user status is blocked
     await this.otpService.updateRefreshToken(userId, tokens.refreshToken);
@@ -157,13 +154,7 @@ export class OtpController {
   @Get('refresh')
   @Roles('user', 'admin', 'superadmin')
   @UseGuards(RefreshTokenGuard, RolesGuard)
-  async refreshTokens(
-    @Req() req: any,
-    @Res() res: Response,
-    // @I18n() i18n: I18nContext,
-  ) {
-    // console.log('req.user');
-    // console.log(req.user);
+  async refreshTokens(@Req() req: any, @Res() res: Response) {
     await this.usersService.checkUserStatusByUserId(req.user.id);
     return this.responseService.response(
       res,

@@ -162,13 +162,6 @@ export const identifyImageMimeType = (filePath) => {
 };
 
 export const imageFileFilter = (req, file, cb) => {
-  // console.log('Uploaded File');
-  // console.log(file);
-  // const fileContent = fs.readFileSync(file.path, 'utf8');
-  // console.log(fileContent);
-  // console.log(VALID_IMAGE_MIME_TYPES.includes(file.mimetype));
-  // console.log(file.originalname.match(/\.(jpg|jpeg|png|gif|webp|svg)$/));
-  // cb(null, true);
   if (
     VALID_IMAGE_MIME_TYPES.includes(file.mimetype) &&
     file.originalname.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)
@@ -213,12 +206,10 @@ export const editFileName = (req, file, callback) => {
 };
 
 export const multerLocalOptionsStorage = diskStorage({
-  // destination: `public/${userId}`,
   destination: (req: any, file, cb) => {
     const userId = req.user.id;
     const userUploadPath = `public/${userId}/avatar/`;
     createFolder(userUploadPath);
-    // console.log('AVATAR UPLOADED DIRECTORY');
     cb(null, userUploadPath);
   },
   filename: editFileName,

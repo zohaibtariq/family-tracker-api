@@ -64,7 +64,7 @@ export class UsersController {
   ) {
     // TODO: add default pic to avatar means return default pic which need to be setup by super admin
     if (file) {
-      console.log(i18n.t('auth.TOKEN_REVOKED')); // TODO: CONVERT ALL MESSAGES VIA LANG
+      // console.log(i18n.t('auth.TOKEN_REVOKED')); // TODO: CONVERT ALL MESSAGES VIA LANG
       const fileMimeType = identifyImageMimeType(file.path);
       const isValid = VALID_IMAGE_MIME_TYPES.includes(fileMimeType);
       const isFileInLimit = file.size > MAX_FILE_SIZE_IN_BYTES;
