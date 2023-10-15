@@ -9,6 +9,7 @@ export interface RequestUserInterface {
   // sub: ObjectId;
   // sub: mongoose.Schema.Types.ObjectId;
   sub: Types.ObjectId;
+  id: Types.ObjectId;
   iat: number;
   exp: number;
 }

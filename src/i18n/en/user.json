@@ -1,0 +1,4 @@
+{
+  "ERROR_FILE_SIZE_LARGE": "EN: File size {{FILE_SIZE_MB}} is larger then allowed size {{MAX_FILE_SIZE_IN_MB}}",
+  "ERROR_FILE_TYPE_NOT_ALLOWED": "EN: This file type {{FILE_MIME_TYPE}} is not allowed to be uploaded."
+}

@@ -12,6 +12,7 @@ import { AccessTokenStrategy } from './strategies/accessToken.strategy';
 import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { RevokedAccessTokenBlacklistMiddleware } from './middlewares/revoked-access-token-blacklist.middleware';
+import { ScreensModule } from '../screens/screens.module';
 // import { RedisService } from 'nestjs-redis';
 
 // import { RedisCacheModule } from '../redis/redis.module';
@@ -28,6 +29,7 @@ import { RevokedAccessTokenBlacklistMiddleware } from './middlewares/revoked-acc
     UsersModule,
     SettingsModule,
     ResponseModule,
+    ScreensModule,
     // RedisModule,
     // RedisModule,
     // RedisCacheModule,

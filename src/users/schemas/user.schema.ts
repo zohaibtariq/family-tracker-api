@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { UserRole } from '../enums/user.enum';
+import { UserStatus } from '../enums/users.status.enum';
 
 @Schema({
   collection: 'users',
@@ -9,6 +10,9 @@ import { UserRole } from '../enums/user.enum';
 export class User {
   @Prop({ required: true, unique: true, dropDupes: true })
   phoneNumber: string;
+
+  @Prop({ required: true })
+  countryCode: string;
 
   @Prop()
   emergencyNumber: string;
@@ -27,6 +31,9 @@ export class User {
 
   @Prop({ default: 'user' })
   role: UserRole;
+
+  @Prop({ default: UserStatus.UNVERIFIED })
+  status: UserStatus;
 }
 
 const UserSchema = SchemaFactory.createForClass(User);

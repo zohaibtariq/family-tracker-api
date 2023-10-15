@@ -88,7 +88,7 @@ export class ScreensController {
   // ) {
   //   return this.screensService.update(id, updateScreenDto, { new: true });
   // }
-  //
+
   // @UseGuards(AccessTokenGuard)
   // @Delete(':id')
   // remove(@Param('id') id: Types.ObjectId) {

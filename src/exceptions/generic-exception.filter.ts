@@ -31,7 +31,7 @@ export class GenericExceptionFilter implements ExceptionFilter {
       exception.response ||
       'An error occurred';
     // }
-
+    // TODO: should be converted to this.responseService.response()
     if (status === HttpStatus.FORBIDDEN)
       this.responseService.forbidden(response, message);
     else if (status === HttpStatus.UNAUTHORIZED)

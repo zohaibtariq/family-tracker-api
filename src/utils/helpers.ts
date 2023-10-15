@@ -15,15 +15,15 @@ export const VALID_IMAGE_MIME_TYPES = [
   'image/svg+xml',
 ];
 
-export function addMinutesToUnixTimestamp(timestamp, minutesToAdd) {
-  // Convert minutes to milliseconds (1 minute = 60,000 milliseconds)
-  const millisecondsToAdd = minutesToAdd * 60000;
-
-  // Calculate the new Unix timestamp
-  const newTimestamp = timestamp + millisecondsToAdd;
-
-  return newTimestamp;
-}
+// export function addMinutesToUnixTimestamp(timestamp, minutesToAdd) {
+//   // Convert minutes to milliseconds (1 minute = 60,000 milliseconds)
+//   const millisecondsToAdd = minutesToAdd * 60000;
+//
+//   // Calculate the new Unix timestamp
+//   const newTimestamp = timestamp + millisecondsToAdd;
+//
+//   return newTimestamp;
+// }
 
 export function subtractMinutesToUnixTimestamp(timestamp, minutesToSubtract) {
   // Convert minutes to milliseconds (1 minute = 60,000 milliseconds)
@@ -200,7 +200,7 @@ export const imageFileFilter = (req, file, cb) => {
 };
 
 export const editFileName = (req, file, callback) => {
-  // console.log(req.user.sub);
+  // console.log(req.user.id);
   // const name = file.originalname.split('.')[0];
   const fileExtName = extname(file.originalname);
   // const randomName = Array(4)
@@ -208,14 +208,14 @@ export const editFileName = (req, file, callback) => {
   //   .map(() => Math.round(Math.random() * 16).toString(16))
   //   .join('');
   // let fileName = `${name}-${randomName}${fileExtName}`;
-  const fileName = `${req.user.sub}${fileExtName}`;
+  const fileName = `${req.user.id}${fileExtName}`;
   callback(null, fileName);
 };
 
 export const multerLocalOptionsStorage = diskStorage({
   // destination: `public/${userId}`,
   destination: (req: any, file, cb) => {
-    const userId = req.user.sub;
+    const userId = req.user.id;
     const userUploadPath = `public/${userId}/avatar/`;
     createFolder(userUploadPath);
     // console.log('AVATAR UPLOADED DIRECTORY');
