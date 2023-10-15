@@ -23,6 +23,7 @@ import {
   imageFileFilter,
   MAX_FILE_SIZE_IN_BYTES,
   multerLocalOptionsStorage,
+  replacePlaceholders,
   VALID_IMAGE_MIME_TYPES,
 } from '../utils/helpers';
 import { I18n, I18nContext } from 'nestjs-i18n';
@@ -61,21 +62,25 @@ export class UsersController {
     file,
     @I18n() i18n: I18nContext,
   ) {
-    console.log('PROCESSING REST OF THE CODE...');
-    console.log('update');
-    console.log(file);
+    // TODO: add default pic to avatar means return default pic which need to be setup by super admin
     if (file) {
-      console.log(i18n.t('auth.TOKEN_REVOKED'));
+      console.log(i18n.t('auth.TOKEN_REVOKED')); // TODO: CONVERT ALL MESSAGES VIA LANG
       const fileMimeType = identifyImageMimeType(file.path);
       const isValid = VALID_IMAGE_MIME_TYPES.includes(fileMimeType);
       const isFileInLimit = file.size > MAX_FILE_SIZE_IN_BYTES;
       let errorMsg = '';
       if (isFileInLimit) {
-        errorMsg = `File size ${bytesToMB(
-          file.size,
-        )} is larger then allowed size ${bytesToMB(MAX_FILE_SIZE_IN_BYTES)}`;
+        errorMsg = replacePlaceholders(i18n.t('user.ERROR_FILE_SIZE_LARGE'), {
+          FILE_SIZE_MB: bytesToMB(file.size),
+          MAX_FILE_SIZE_IN_MB: bytesToMB(MAX_FILE_SIZE_IN_BYTES),
+        });
       } else if (!isValid) {
-        errorMsg = `This file type is not allowed to be uploaded.`;
+        errorMsg = replacePlaceholders(
+          i18n.t('user.ERROR_FILE_TYPE_NOT_ALLOWED'),
+          {
+            FILE_MIME_TYPE: fileMimeType,
+          },
+        );
       }
       // IMPORTANT: if any issue file must be deleted and exception should be thrown
       if (!isValid || isFileInLimit) {
@@ -83,10 +88,17 @@ export class UsersController {
         throw new HttpException(errorMsg, HttpStatus.UNPROCESSABLE_ENTITY);
       }
       // NOTE: file is valid till here hence will stay
+      deleteAllFromDestExcludingOne(file.destination, file.filename); // IMPORTANT:: it is deleting all files excluding the recently uploaded one
+      updateUserDto.avatar = file.filename;
     }
-    deleteAllFromDestExcludingOne(file.destination, file.filename); // IMPORTANT:: it is deleting all files excluding the recently uploaded one
-    const userId: Types.ObjectId = req.user.sub;
-    updateUserDto.avatar = file.filename;
+    const userId: Types.ObjectId = req.user.id;
+    updateUserDto.firstName = updateUserDto.firstName;
+    updateUserDto.lastName = updateUserDto.lastName;
+    if (updateUserDto?.emergencyCountryCode && updateUserDto?.emergencyNumber)
+      updateUserDto.emergencyNumber =
+        updateUserDto.emergencyCountryCode + updateUserDto.emergencyNumber;
+    if (updateUserDto?.emergencyCountryCode)
+      delete updateUserDto.emergencyCountryCode; // NOTE: because we don't want to persist country code of emergency number
     const updatedUser = this.usersService.update(userId, updateUserDto, {
       new: true,
     });

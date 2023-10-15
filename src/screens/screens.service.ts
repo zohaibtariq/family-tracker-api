@@ -36,6 +36,19 @@ export class ScreensService {
     );
   }
 
+  async findBySlug(
+    slug: string,
+    projection: Record<string, unknown> = {},
+  ): Promise<ScreenDocument> {
+    return this.screensRepository.findOne(
+      { slug },
+      {
+        __v: 0,
+        ...projection,
+      },
+    );
+  }
+
   async remove(id: Types.ObjectId) {
     return this.screensRepository.findByIdAndRemove(id);
   }

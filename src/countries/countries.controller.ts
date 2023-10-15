@@ -55,7 +55,7 @@ export class CountriesController {
   // findOne(@Param('id') id: Types.ObjectId) {
   //   return this.countriesService.findOne(id);
   // }
-  //
+
   // @UseGuards(AccessTokenGuard)
   // @Patch(':id')
   // update(
@@ -64,7 +64,7 @@ export class CountriesController {
   // ) {
   //   return this.countriesService.update(id, updateCountryDto, { new: true });
   // }
-  //
+
   // @UseGuards(AccessTokenGuard)
   // @Delete(':id')
   // remove(@Param('id') id: Types.ObjectId) {

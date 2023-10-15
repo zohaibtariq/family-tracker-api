@@ -55,7 +55,7 @@ export class LanguagesController {
   // findOne(@Param('id') id: Types.ObjectId) {
   //   return this.languagesService.findOne(id);
   // }
-  //
+
   // @UseGuards(AccessTokenGuard)
   // @Patch(':id')
   // update(
@@ -64,7 +64,7 @@ export class LanguagesController {
   // ) {
   //   return this.languagesService.update(id, updateLanguageDto, { new: true });
   // }
-  //
+
   // @UseGuards(AccessTokenGuard)
   // @Delete(':id')
   // remove(@Param('id') id: Types.ObjectId) {
