@@ -14,7 +14,7 @@ import { DuplicateKeyExceptionFilter } from '../exceptions/duplicate-key.filter'
 import { CreateScreenDto } from './dto/create-screen.dto';
 import { AccessTokenGuard } from '../otp/guards/accessToken.guard';
 import { Roles } from '../otp/decoraters/roles.decorator';
-import { RolesGuard } from '../otp/guards/roles.guard';
+import { ValidUserGuard } from '../otp/guards/valid.user.guard';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { Types } from 'mongoose';
 import { ResponseService } from '../response/response.service';
@@ -22,7 +22,7 @@ import { Response } from 'express';
 import { SettingsService } from '../settings/settings.service';
 import { replacePlaceholders } from '../utils/helpers';
 
-@UseGuards(AccessTokenGuard)
+@UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('screens')
 export class ScreensController {
   constructor(
@@ -33,7 +33,7 @@ export class ScreensController {
 
   @Post()
   @Roles('admin', 'superadmin')
-  @UseGuards(RolesGuard)
+  // @UseGuards(ValidUserGuard)
   @UseFilters(DuplicateKeyExceptionFilter)
   async create(@Res() res: Response, @Body() createScreenDto: CreateScreenDto) {
     return this.responseService.response(
@@ -45,8 +45,8 @@ export class ScreensController {
   }
 
   @Get()
-  @Roles('user', 'admin', 'superadmin')
-  @UseGuards(RolesGuard)
+  // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
+  // @UseGuards(ValidUserGuard)
   async findAll(@Res() res: Response) {
     return this.responseService.response(
       res,

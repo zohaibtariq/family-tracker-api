@@ -8,6 +8,12 @@ import { DuplicateKeyExceptionFilter } from '../exceptions/duplicate-key.filter'
 import { CountriesRepository } from './countries.repository';
 import { ResponseModule } from '../response/response.module';
 import { RevokedAccessTokenBlacklistMiddleware } from '../otp/middlewares/revoked-access-token-blacklist.middleware';
+import { SettingsService } from '../settings/settings.service';
+import { SettingsRepository } from '../settings/settings.repository';
+import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
+import { UsersService } from '../users/users.service';
+import { UsersRepository } from '../users/users.repository';
+import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({
   imports: [
@@ -15,6 +21,15 @@ import { RevokedAccessTokenBlacklistMiddleware } from '../otp/middlewares/revoke
       {
         name: Country.name,
         schema: CountrySchema,
+      },
+      {
+        name: Settings.name,
+        schema: SettingsSchema,
+      },
+      {
+        name: User.name,
+        schema: UserSchema,
+        // schema: forwardRef(() => UserSchema),
       },
     ]),
     ResponseModule,
@@ -27,6 +42,16 @@ import { RevokedAccessTokenBlacklistMiddleware } from '../otp/middlewares/revoke
       provide: APP_FILTER,
       useClass: DuplicateKeyExceptionFilter,
     },
+    SettingsService,
+    SettingsRepository,
+    UsersService,
+    UsersRepository,
+    // {
+    //   provide: UsersRepository,
+    //   useFactory: () => {
+    //     return new UsersRepository(forwardRef(() => UserModel));
+    //   },
+    // },
   ],
   exports: [CountriesService, CountriesRepository],
 })

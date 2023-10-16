@@ -2,10 +2,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { UserRole } from '../enums/user.enum';
 import { UserStatus } from '../enums/users.status.enum';
+import * as process from 'process';
 
 @Schema({
   collection: 'users',
   timestamps: { createdAt: 'created', updatedAt: 'updated' },
+  toObject: { getters: true },
+  toJSON: { getters: true },
 })
 export class User {
   @Prop({ required: true, unique: true, dropDupes: true })
@@ -14,16 +17,16 @@ export class User {
   @Prop({ required: true })
   countryCode: string;
 
-  @Prop()
+  @Prop({ default: '' })
   emergencyNumber: string;
 
-  @Prop()
+  @Prop({ default: '' })
   firstName: string;
 
-  @Prop()
+  @Prop({ default: '' })
   lastName: string;
 
-  @Prop()
+  @Prop({ default: '' })
   avatar: string;
 
   @Prop()
@@ -46,5 +49,12 @@ UserSchema.methods.toJSON = function () {
   delete obj._id;
   return obj;
 };
+
+UserSchema.path('avatar').get(function (value) {
+  if (!value)
+    return `${process.env.NODE_APP_URL}:${process.env.NODE_APP_PORT}/public/images/defaults/avatar.png`;
+  else
+    return `${process.env.NODE_APP_URL}:${process.env.NODE_APP_PORT}/public/avatars/${this.id}/avatar/${value}`;
+});
 
 export { UserSchema };

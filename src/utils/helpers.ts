@@ -208,7 +208,7 @@ export const editFileName = (req, file, callback) => {
 export const multerLocalOptionsStorage = diskStorage({
   destination: (req: any, file, cb) => {
     const userId = req.user.id;
-    const userUploadPath = `public/${userId}/avatar/`;
+    const userUploadPath = `public/avatars/${userId}/avatar/`;
     createFolder(userUploadPath);
     cb(null, userUploadPath);
   },

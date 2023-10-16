@@ -8,11 +8,13 @@ import { APP_FILTER } from '@nestjs/core';
 import { DuplicateKeyExceptionFilter } from '../exceptions/duplicate-key.filter';
 import { RevokedAccessTokenBlacklistMiddleware } from '../otp/middlewares/revoked-access-token-blacklist.middleware';
 import { ResponseModule } from '../response/response.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     ResponseModule,
+    SettingsModule,
   ],
   controllers: [UsersController],
   providers: [

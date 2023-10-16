@@ -10,7 +10,7 @@ import { SettingsService } from '../settings/settings.service';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import mongoose, { Types } from 'mongoose';
 import { UsersService } from '../users/users.service';
-import otp_constants from './otp_constants';
+import otp_constants from './constants';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
@@ -28,7 +28,7 @@ export class OtpService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly i18n: I18nService,
-    @InjectRedis() private readonly redis: Redis, // or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
+    @InjectRedis() private readonly redis: Redis, // NOTE or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
   ) {}
 
   async create(userId: mongoose.Types.ObjectId) {
@@ -84,16 +84,15 @@ export class OtpService {
     if (filterVerifyOtp === null)
       return { status: otp_constants.OTP_ERROR_WRONG_OR_EXPIRED, user };
     await this.otpRepository.deleteMany({
-      // here we kept all verified otps only and will delete all non verified otp of that specific user.
+      // NOTE here we kept all verified otps only and will delete all non verified otp of that specific user.
       verified: false,
-      // userId, // if we want to delete all non verified user ids
+      // userId, // NOTE if we want to delete all non verified user ids comment this
       expiry: { $lt: unixOtpTimeStamp },
     });
     return { status: otp_constants.OTP_VERIFIED, user };
   }
 
   async getTokens(user: UserDocument) {
-    // const userId = user._id;
     const User = {
       id: user._id,
       phoneNumber: user.phoneNumber,
@@ -158,14 +157,14 @@ export class OtpService {
     const user = await this.usersService.findById(userId, {});
     if (!user || !user.refreshToken)
       throw new ForbiddenException(
-        'Access Denied User or Refresh Token not found',
+        'Access Denied User or Refresh Token not found', // NOTE we cannot translate it screen vice as per our current logic bcz it is not bind with any screen directly its global
       );
     const refreshTokenMatches = await argon2.verify(
       user.refreshToken,
       refreshToken,
     );
     if (!refreshTokenMatches) {
-      throw new ForbiddenException('Access Denied - Refresh Token Not Matched');
+      throw new ForbiddenException('Access Denied - Refresh Token Not Matched'); // NOTE we cannot translate it screen vice as per our current logic bcz it is not bind with any screen directly its global
     }
     const tokens = await this.getTokens(user);
     await this.updateRefreshToken(user.id, tokens.refreshToken);

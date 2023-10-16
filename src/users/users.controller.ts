@@ -11,10 +11,9 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Roles } from '../otp/decoraters/roles.decorator';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { RolesGuard } from '../otp/guards/roles.guard';
+import { ValidUserGuard } from '../otp/guards/valid.user.guard';
 import { AccessTokenGuard } from '../otp/guards/accessToken.guard';
 import { RequestUserInterface } from './interfaces/request-user-interface';
 import { FileInterceptor } from '@nestjs/platform-express'; // import { imageFileFilter, imageStorage } from '../utils/helpers';
@@ -33,20 +32,23 @@ import * as fs from 'fs';
 import { Types } from 'mongoose';
 import { Response } from 'express';
 import { ResponseService } from '../response/response.service';
+import { SettingsService } from '../settings/settings.service'; // import { FileContentInterceptor } from '../utils/FileContentInterceptor';
+import { Roles } from '../otp/decoraters/roles.decorator';
 
 // import { FileContentInterceptor } from '../utils/FileContentInterceptor';
 
-@UseGuards(AccessTokenGuard, RolesGuard) // @Roles() cannot be defined on top they are function level while RolesGuard can be defined over top and as per current logic if any function has no roles defined means it is a public route means accessible to everyone.
+@UseGuards(AccessTokenGuard, ValidUserGuard) // @Roles() cannot be defined on top they are function level while ValidUserGuard can be defined over top and as per current logic if any function has no roles defined means it is a public route means accessible to everyone.
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly responseService: ResponseService,
+    private readonly settingsService: SettingsService,
   ) {}
 
   @Get()
-  @Roles('user', 'admin', 'superadmin')
-  async findAll(@Req() req: RequestUserInterface, @Res() res: Response) {
+  // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
+  async findOne(@Req() req: RequestUserInterface, @Res() res: Response) {
     return this.responseService.response(
       res,
       await this.usersService.findById(req.user.id),
@@ -54,7 +56,7 @@ export class UsersController {
   }
 
   @Patch()
-  @Roles('user', 'admin', 'superadmin')
+  // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: multerLocalOptionsStorage,
@@ -79,9 +81,8 @@ export class UsersController {
     file,
     @I18n() i18n: I18nContext,
   ) {
-    // TODO: add default pic to avatar means return default pic which need to be setup by super admin
     if (file) {
-      // console.log(i18n.t('auth.TOKEN_REVOKED')); // TODO: CONVERT ALL MESSAGES VIA LANG
+      // TODO: CONVERT ALL MESSAGES VIA LANG only those which will be visible to users, error messages not displayed over app can be converted or stay in english only
       const fileMimeType = identifyImageMimeType(file.path);
       const isValid = VALID_IMAGE_MIME_TYPES.includes(fileMimeType);
       const isFileInLimit = file.size > MAX_FILE_SIZE_IN_BYTES;
@@ -120,5 +121,28 @@ export class UsersController {
       new: true,
     });
     return this.responseService.response(res, updatedUser);
+  }
+
+  @Get('user-admin-superadmin')
+  async userAdminSuperGuard(
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+  ) {
+    return this.responseService.response(res, 'USER | ADMIN | SUPER ADMIN');
+  }
+
+  @Get('admin-superadmin')
+  @Roles('admin', 'superadmin')
+  async adminSuperGuard(
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+  ) {
+    return this.responseService.response(res, 'ADMIN | SUPER ADMIN');
+  }
+
+  @Get('superadmin')
+  @Roles('superadmin')
+  async superGuard(@Req() req: RequestUserInterface, @Res() res: Response) {
+    return this.responseService.response(res, 'SUPER ADMIN');
   }
 }

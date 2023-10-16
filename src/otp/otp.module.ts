@@ -10,7 +10,7 @@ import { ResponseModule } from '../response/response.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './strategies/accessToken.strategy';
 import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
-import { RolesGuard } from './guards/roles.guard';
+import { ValidUserGuard } from './guards/valid.user.guard';
 import { RevokedAccessTokenBlacklistMiddleware } from './middlewares/revoked-access-token-blacklist.middleware';
 import { ScreensModule } from '../screens/screens.module';
 // import { RedisService } from 'nestjs-redis';
@@ -41,7 +41,7 @@ import { ScreensModule } from '../screens/screens.module';
     JwtService,
     AccessTokenStrategy,
     RefreshTokenStrategy,
-    RolesGuard,
+    ValidUserGuard,
     // RedisService,
   ],
 })

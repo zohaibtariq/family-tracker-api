@@ -1,17 +1,17 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDocument } from './schemas/user.schema';
 import { UsersRepository } from './users.repository';
 import { I18nService } from 'nestjs-i18n';
-import { UserStatus } from './enums/users.status.enum';
-import { replacePlaceholders } from '../utils/helpers';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly i18n: I18nService,
+    private readonly settingsService: SettingsService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
@@ -44,23 +44,5 @@ export class UsersService {
 
   createOrUpdate(filter = {}, update = {}, options = {}) {
     return this.usersRepository.findOneAndUpdate(filter, update, options);
-  }
-
-  async checkUserStatusByPhoneNumber(phoneNumber) {
-    this.checkUserStatus(await this.findByPhoneNumber(phoneNumber));
-  }
-
-  async checkUserStatusByUserId(userId) {
-    this.checkUserStatus(await this.findById(userId));
-  }
-
-  checkUserStatus(user) {
-    if (user !== null && user.status === UserStatus.BLOCKED)
-      throw new HttpException(
-        replacePlaceholders(this.i18n.t('otp.USER_BLOCKED'), {
-          ADMIN_CONTACT: 'TODO03132523242', // TODO: Need to add this in super admin so one user can contact to admin.
-        }),
-        HttpStatus.FORBIDDEN,
-      );
   }
 }

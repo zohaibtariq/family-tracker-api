@@ -1,7 +1,4 @@
 {
-  "OTP_SENT_MSG": "EN: OTP has been sent to {{PHONE_NUMBER}}.",
-  "OTP_MAX_RETRY_EXCEPTION": "EN: Max retry limit \"{{MAX_RETRY_LIMIT}}\" of OTP reached, please retry after \"{{RESET_OTP_RETRY_HOURS}}\" hours",
-  "USER_BLOCKED": "EN: You are blocked contact admin at \"{{ADMIN_CONTACT}}\".",
   "OTP_VERIFICATION_SUCCESS": "EN: OTP verification has been successful.",
   "PHONE_NUMBER_NOT_FOUND": "EN: User not found.",
   "OTP_EXPIRY_SEC_NOT_DEFINED": "EN: OTP expiry seconds not defined in settings.",
