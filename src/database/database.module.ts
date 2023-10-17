@@ -1,11 +1,16 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DatabaseSeeder } from './database.seeder';
-import { CountriesModule } from '../countries/countries.module';
 import { ConfigService } from '@nestjs/config';
-import { SettingsModule } from '../settings/settings.module';
-import { LanguagesModule } from '../languages/languages.module';
-import { ScreensModule } from '../screens/screens.module';
+import { SettingsService } from '../settings/settings.service';
+import { SettingsRepository } from '../settings/settings.repository';
+import { LanguagesRepository } from '../languages/languages.repository';
+import { ScreensRepository } from '../screens/screens.repository';
+import { CountriesRepository } from '../countries/countries.repository';
+import { Country, CountrySchema } from '../countries/schemas/country.schema';
+import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
+import { Language, LanguageSchema } from '../languages/schemas/language.schema';
+import { Screen, ScreenSchema } from '../screens/schemas/screen.schema';
 
 @Module({
   imports: [
@@ -17,13 +22,33 @@ import { ScreensModule } from '../screens/screens.module';
       },
       inject: [ConfigService],
     }),
-    CountriesModule,
-    SettingsModule,
-    LanguagesModule,
-    ScreensModule,
-    // I18nModule,
+    MongooseModule.forFeature([
+      {
+        name: Country.name,
+        schema: CountrySchema,
+      },
+      {
+        name: Settings.name,
+        schema: SettingsSchema,
+      },
+      {
+        name: Language.name,
+        schema: LanguageSchema,
+      },
+      {
+        name: Screen.name,
+        schema: ScreenSchema,
+      },
+    ]),
   ],
-  providers: [DatabaseSeeder],
+  providers: [
+    DatabaseSeeder,
+    SettingsService,
+    CountriesRepository,
+    SettingsRepository,
+    LanguagesRepository,
+    ScreensRepository,
+  ],
   exports: [],
 })
 export class DatabaseModule {}

@@ -6,13 +6,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Otp, OtpSchema } from './schemas/otp.schema';
 import { UsersModule } from '../users/users.module';
 import { SettingsModule } from '../settings/settings.module';
-import { ResponseModule } from '../response/response.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './strategies/accessToken.strategy';
 import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
-import { RolesGuard } from './guards/roles.guard';
+import { ValidUserGuard } from './guards/valid.user.guard';
 import { RevokedAccessTokenBlacklistMiddleware } from './middlewares/revoked-access-token-blacklist.middleware';
 import { ScreensModule } from '../screens/screens.module';
+import { ResponseService } from '../response/response.service';
 // import { RedisService } from 'nestjs-redis';
 
 // import { RedisCacheModule } from '../redis/redis.module';
@@ -28,7 +28,7 @@ import { ScreensModule } from '../screens/screens.module';
     ]),
     UsersModule,
     SettingsModule,
-    ResponseModule,
+    // ResponseModule,
     ScreensModule,
     // RedisModule,
     // RedisModule,
@@ -41,8 +41,9 @@ import { ScreensModule } from '../screens/screens.module';
     JwtService,
     AccessTokenStrategy,
     RefreshTokenStrategy,
-    RolesGuard,
+    ValidUserGuard,
     // RedisService,
+    ResponseService,
   ],
 })
 export class OtpModule implements NestModule {

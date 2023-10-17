@@ -18,18 +18,18 @@ import { I18n, I18nContext } from 'nestjs-i18n';
 import { replacePlaceholders } from '../utils/helpers';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { SendOtpDto } from './dto/send-otp-dto';
-import otp_constants from './otp_constants';
+import otp_constants from './constants';
 import { AccessTokenGuard } from './guards/accessToken.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { UserRole } from '../users/enums/user.enum';
-import { Roles } from './decoraters/roles.decorator';
-import { RolesGuard } from './guards/roles.guard';
+import { ValidUserGuard } from './guards/valid.user.guard';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 import { ConfigService } from '@nestjs/config';
 import { UserStatus } from '../users/enums/users.status.enum';
 import { ScreensService } from '../screens/screens.service';
 import { ScreenSlug } from '../screens/enums/screens.slugs.enum';
+import { RequestUserInterface } from '../users/interfaces/request-user-interface';
 
 @Controller('otp')
 export class OtpController {
@@ -44,13 +44,13 @@ export class OtpController {
   ) {}
 
   @Post('send')
+  @UseGuards(ValidUserGuard) // NOTE Do not move it to top
   async send(
     @Res() res: Response,
     @Body() sendOtpDto: SendOtpDto,
     @I18n() i18n: I18nContext,
   ) {
     const phoneNumber = sendOtpDto.countryCode + sendOtpDto.phoneNumber;
-    await this.usersService.checkUserStatusByPhoneNumber(phoneNumber);
     const user = await this.usersService.createOrUpdate(
       {
         phoneNumber,
@@ -73,20 +73,19 @@ export class OtpController {
     const settings: any = await this.settingsService.findAll();
     if (otpCounts < settings.max_retry_limit) {
       const createdResponse = await this.otpService.create(userId);
-      this.responseService.success(
-        // TODO: should be converted to this.responseService.response()
+      this.responseService.response(
         res,
-        replacePlaceholders(i18n.t('otp.OTP_SENT_MSG'), {
-          PHONE_NUMBER: phoneNumber,
-        }),
         {
           phoneNumber: createdResponse.phoneNumber,
           otp: createdResponse.otp,
         },
+        replacePlaceholders(i18n.t('otp_send.OTP_SENT_MSG'), {
+          PHONE_NUMBER: phoneNumber,
+        }),
       );
     } else
       throw new HttpException(
-        replacePlaceholders(i18n.t('otp.OTP_MAX_RETRY_EXCEPTION'), {
+        replacePlaceholders(i18n.t('otp_send.OTP_MAX_RETRY_EXCEPTION'), {
           MAX_RETRY_LIMIT: settings.max_retry_limit,
           RESET_OTP_RETRY_HOURS: settings.reset_otp_retry_hours,
         }),
@@ -95,24 +94,23 @@ export class OtpController {
   }
 
   @Post('verify')
+  @UseGuards(ValidUserGuard) // NOTE Do not move it to top
   async verify(
     @Res() res: Response,
     @Body() verifyOtpDto: VerifyOtpDto,
     @I18n() i18n: I18nContext,
   ) {
-    await this.usersService.checkUserStatusByPhoneNumber(
-      verifyOtpDto.phoneNumber,
-    );
     const { status, user } =
       await this.otpService.getVerifiedOTPUserId(verifyOtpDto);
     if (status !== otp_constants.OTP_VERIFIED)
-      return this.responseService.badRequest(
-        // TODO: should be converted to this.responseService.response()
+      return this.responseService.response(
         res,
-        replacePlaceholders(i18n.t('otp.' + status), {
+        {},
+        replacePlaceholders(i18n.t('otp_verify.' + status), {
           OTP_EXPIRY_SECONDS:
             await this.settingsService.get('otp_expiry_seconds'),
         }),
+        HttpStatus.BAD_REQUEST,
       );
     const userId = user._id;
     const tokens = await this.otpService.getTokens(user);
@@ -124,18 +122,17 @@ export class OtpController {
     responseData.next_screen = ScreenSlug.HOME;
     responseData.previous_screen = ScreenSlug.OTP_SEND;
     responseData.current_screen = ScreenSlug.OTP_VERIFY;
-    return this.responseService.success(
-      // TODO: should be converted to this.responseService.response()
+    return this.responseService.response(
       res,
-      i18n.t('otp.OTP_VERIFICATION_SUCCESS'),
       responseData,
+      i18n.t('otp_verify.OTP_VERIFICATION_SUCCESS'),
     );
   }
 
   @Post('logout')
-  @Roles('user', 'admin', 'superadmin')
-  @UseGuards(AccessTokenGuard, RolesGuard)
-  async logout(@Req() req: any, @Res() res: Response) {
+  // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
+  @UseGuards(AccessTokenGuard, ValidUserGuard) // NOTE do not move ValidUserGuard at top by thinking it is defined over every route by sequence this requires req.user to work properly and it is injected by AccessTokenGuard here
+  async logout(@Req() req: RequestUserInterface, @Res() res: Response) {
     const token = (
       req.headers as { authorization?: string }
     )?.authorization?.replace('Bearer ', '');
@@ -152,10 +149,9 @@ export class OtpController {
   }
 
   @Get('refresh')
-  @Roles('user', 'admin', 'superadmin')
-  @UseGuards(RefreshTokenGuard, RolesGuard)
-  async refreshTokens(@Req() req: any, @Res() res: Response) {
-    await this.usersService.checkUserStatusByUserId(req.user.id);
+  // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
+  @UseGuards(RefreshTokenGuard, ValidUserGuard) // NOTE do not move ValidUserGuard at top by thinking it is defined over every route by sequence this requires req.user to work properly and it is injected by RefreshTokenGuard here
+  async refreshTokens(@Req() req: RequestUserInterface, @Res() res: Response) {
     return this.responseService.response(
       res,
       await this.otpService.refreshTokens(req.user.id, req.user.refreshToken),

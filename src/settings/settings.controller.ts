@@ -2,7 +2,7 @@ import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { AccessTokenGuard } from '../otp/guards/accessToken.guard';
 import { Roles } from '../otp/decoraters/roles.decorator';
-import { RolesGuard } from '../otp/guards/roles.guard';
+import { ValidUserGuard } from '../otp/guards/valid.user.guard';
 import { ResponseService } from '../response/response.service';
 import { Response } from 'express';
 
@@ -16,12 +16,12 @@ export class SettingsController {
 
   @Post()
   @Roles('admin', 'superadmin')
-  @UseGuards(RolesGuard)
+  @UseGuards(ValidUserGuard)
   create() {}
 
   @Get()
-  @Roles('user', 'admin', 'superadmin')
-  @UseGuards(RolesGuard)
+  // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
+  @UseGuards(ValidUserGuard)
   async allSettings(@Res() res: Response) {
     return this.responseService.response(
       res,

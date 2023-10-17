@@ -168,6 +168,34 @@ export class DatabaseSeeder {
     const screens = await this.screensRepository.find({ isActive: true });
     const staticSettings: any[] = [
       {
+        key: 'dev_contact_number',
+        value: '+923132523242',
+      },
+      {
+        key: 'dev_contact_email',
+        value: 'se.zohaib+dev@gmail.com',
+      },
+      {
+        key: 'admin_contact_number',
+        value: '+923132523242',
+      },
+      {
+        key: 'admin_contact_email',
+        value: 'se.zohaib+admin@gmail.com',
+      },
+      {
+        key: 'default_avatar',
+        value: 'public/images/defaults/avatar.png',
+      },
+      {
+        key: 'default_avatar_male',
+        value: 'public/images/defaults/avatar-male.png',
+      },
+      {
+        key: 'default_avatar_female',
+        value: 'public/images/defaults/avatar-female.png',
+      },
+      {
         key: 'otp_expiry_seconds',
         value: 15,
       },
@@ -180,6 +208,8 @@ export class DatabaseSeeder {
         value: 0.0166667, // 24, 0.0166667 = 1min
       },
     ];
+    // console.log('staticSettings');
+    // console.log(staticSettings);
     await this.saveOrUpdateSettings(staticSettings); // IMPORTANT:: first store static settings so it can be accessed from db while storing dynamic settings
     const dynamicSettings: any[] = [
       {
@@ -208,12 +238,12 @@ export class DatabaseSeeder {
 
   async saveOrUpdateSettings(settings) {
     for (const setting of settings) {
-      const existingCountry = await this.settingsRepository.findOne({
+      const existing = await this.settingsRepository.findOne({
         key: setting.key,
       });
-      if (existingCountry) {
+      if (existing) {
         await this.settingsRepository.findOneAndUpdate(
-          { iso: setting.key },
+          { key: setting.key },
           { $set: setting },
         );
       } else {

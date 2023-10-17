@@ -1,4 +1,6 @@
 {
   "ERROR_FILE_SIZE_LARGE": "EN: File size {{FILE_SIZE_MB}} is larger then allowed size {{MAX_FILE_SIZE_IN_MB}}",
-  "ERROR_FILE_TYPE_NOT_ALLOWED": "EN: This file type {{FILE_MIME_TYPE}} is not allowed to be uploaded."
+  "ERROR_FILE_TYPE_NOT_ALLOWED": "EN: This file type {{FILE_MIME_TYPE}} is not allowed to be uploaded.",
+  "USER_BLOCKED": "EN: You are blocked contact admin at \"{{ADMIN_CONTACT_NUMBER}}\" OR \"{{ADMIN_CONTACT_EMAIL}}\".",
+  "USER_ROLE_NO_ACCESS": "EN: You don't have access to this resource, contact admin at \"{{ADMIN_CONTACT_NUMBER}}\" OR \"{{ADMIN_CONTACT_EMAIL}}\"."
 }

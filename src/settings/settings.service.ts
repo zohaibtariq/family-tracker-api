@@ -11,6 +11,7 @@ export class SettingsService {
   ) {}
 
   async findAll() {
+    // TODO should be cached with redis
     return await this.settingsRepository.find().then((settings) => {
       const allSettings = {};
       settings.forEach((setting) => {
@@ -22,21 +23,21 @@ export class SettingsService {
   }
 
   async get(key: string = '') {
+    // TODO should be cached with redis
     const settings = await this.findAll();
     return settings[key];
   }
 
   async getScreenTranslations(screenSlug: string) {
+    // TODO should be cached with redis
     // console.log('getScreenTranslations START ' + screenSlug);
-    // return this.i18n.t(screenSlug); //2
+    // return this.i18n.t(screenSlug);
     let translations = await this.i18n.t(screenSlug);
     if (typeof translations === 'string') translations = {};
     // console.log(translations);
     const settings = await this.findAll();
-
     // console.log(translations);
     // console.log(settings);
-
     Object.keys(settings).forEach((key) => {
       settings[key.toUpperCase()] = settings[key];
       delete settings[key];
@@ -47,6 +48,6 @@ export class SettingsService {
     // console.log(translations);
     // console.log('getScreenTranslations END ' + screenSlug);
     return translations;
-    // return this.i18n.t(screenSlug, { lang: I18nContext.current().lang }); //
+    // return this.i18n.t(screenSlug, { lang: I18nContext.current().lang });
   }
 }
