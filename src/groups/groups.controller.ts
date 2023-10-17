@@ -58,12 +58,12 @@ export class GroupsController {
     @Param('groupId') groupId: Types.ObjectId,
     @Param('userId') userId: Types.ObjectId,
   ) {
-    console.log(groupId);
-    console.log(userId);
+    // console.log(groupId);
+    // console.log(userId);
     groupId = new Types.ObjectId(groupId);
     userId = new Types.ObjectId(userId);
-    console.log(groupId);
-    console.log(userId);
+    // console.log(groupId);
+    // console.log(userId);
     await this.groupsService.createOrUpdate(
       { _id: groupId },
       { $addToSet: { members: userId } },
