@@ -4,7 +4,6 @@ import { LanguagesController } from './languages.controller';
 import { LanguagesRepository } from './languages.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Language, LanguageSchema } from './schemas/language.schema';
-import { ResponseModule } from '../response/response.module';
 import { RevokedAccessTokenBlacklistMiddleware } from '../otp/middlewares/revoked-access-token-blacklist.middleware';
 import { SettingsService } from '../settings/settings.service';
 import { SettingsRepository } from '../settings/settings.repository';
@@ -12,6 +11,7 @@ import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
 import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../users/users.repository';
 import { User, UserSchema } from '../users/schemas/user.schema';
+import { ResponseService } from '../response/response.service';
 
 @Module({
   imports: [
@@ -29,7 +29,6 @@ import { User, UserSchema } from '../users/schemas/user.schema';
         schema: UserSchema,
       },
     ]),
-    ResponseModule,
   ],
   controllers: [LanguagesController],
   providers: [
@@ -39,6 +38,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
     SettingsRepository,
     UsersService,
     UsersRepository,
+    ResponseService,
   ],
   exports: [LanguagesService, LanguagesRepository],
 })

@@ -223,3 +223,36 @@ export const multerLocalOptions = {
 export function bytesToMB(bytes) {
   return bytes / (1024 * 1024);
 }
+
+export const generateUniqueCode = async (repository, field, desiredLength) => {
+  let uniqueCode;
+  let isUnique = false;
+
+  // Define characters for the alphanumeric string
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const charactersLength = characters.length;
+
+  while (!isUnique) {
+    // Generate a random alphanumeric string of the desired length
+    uniqueCode = '';
+    for (let i = 0; i < desiredLength; i++) {
+      uniqueCode += characters.charAt(
+        Math.floor(Math.random() * charactersLength),
+      );
+    }
+    // uniqueCode = uniqueCode.toUpperCase();
+    // Check if the generated code already exists in the database
+    const existingDocument = await repository.findOne({ [field]: uniqueCode });
+
+    if (!existingDocument) {
+      isUnique = true; // Found a unique code
+    }
+  }
+
+  return uniqueCode;
+};
+
+// Example usage with a desired length of 10:
+// const desiredLength = 10;
+// const uniqueCode = await generateUniqueCode(YourModel, 'yourUniqueColumn', desiredLength);
+// 'uniqueCode' now contains a unique alphanumeric string of length 10

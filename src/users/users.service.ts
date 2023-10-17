@@ -3,15 +3,14 @@ import { Types } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDocument } from './schemas/user.schema';
 import { UsersRepository } from './users.repository';
-import { I18nService } from 'nestjs-i18n';
-import { SettingsService } from '../settings/settings.service';
+// import { I18nService } from 'nestjs-i18n';
+
+// import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class UsersService {
   constructor(
-    private readonly usersRepository: UsersRepository,
-    private readonly i18n: I18nService,
-    private readonly settingsService: SettingsService,
+    private readonly usersRepository: UsersRepository, // private readonly i18n: I18nService, // private readonly settingsService: SettingsService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {

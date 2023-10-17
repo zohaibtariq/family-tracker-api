@@ -23,6 +23,7 @@ import { LanguagesModule } from './languages/languages.module';
 import { RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { MulterModule } from '@nestjs/platform-express';
     ResponseModule,
     ScreensModule,
     LanguagesModule,
+    GroupsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,11 +4,11 @@ import { SettingsController } from './settings.controller';
 import { SettingsRepository } from './settings.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Settings, SettingsSchema } from './schemas/settings.schema';
-import { ResponseModule } from '../response/response.module';
 import { RevokedAccessTokenBlacklistMiddleware } from '../otp/middlewares/revoked-access-token-blacklist.middleware';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../users/users.repository';
+import { ResponseService } from '../response/response.service';
 
 @Module({
   imports: [
@@ -22,7 +22,6 @@ import { UsersRepository } from '../users/users.repository';
         schema: UserSchema,
       },
     ]),
-    ResponseModule,
   ],
   controllers: [SettingsController],
   providers: [
@@ -30,6 +29,7 @@ import { UsersRepository } from '../users/users.repository';
     SettingsRepository,
     UsersService,
     UsersRepository,
+    ResponseService,
   ],
   exports: [SettingsService, SettingsRepository],
 })
