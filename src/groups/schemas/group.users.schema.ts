@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, SchemaTypes, Types } from 'mongoose';
 
 export type GroupUsersDocument = GroupUsers & Document;
 
@@ -10,10 +10,20 @@ export type GroupUsersDocument = GroupUsers & Document;
   // toJSON: { getters: true },
 })
 export class GroupUsers extends Document {
-  @Prop({ required: true })
+  @Prop({
+    required: true,
+    type: SchemaTypes.ObjectId,
+    ref: 'Group',
+    autoCreate: true,
+  })
   groupId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({
+    required: true,
+    type: SchemaTypes.ObjectId,
+    ref: 'User',
+    autoCreate: true,
+  })
   userId: Types.ObjectId;
 
   @Prop({ default: true })

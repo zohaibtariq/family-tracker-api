@@ -18,6 +18,14 @@ import { Screen, ScreenSchema } from '../screens/schemas/screen.schema';
       useFactory: async (configService: ConfigService) => {
         return {
           uri: configService.get('MONGODB_URI'), //process.env.MONGODB_URI,
+          // debug: process.env.NODE_ENV === 'local',
+          // debug: (collectionName, method, query, doc, options) => {
+          //   if (method === 'update' && doc.ok === 0) {
+          //     // Log the debug information only when there's an error in update
+          //     console.error(`Mongoose: Error updating ${collectionName}`);
+          //     console.error(query);
+          //   }
+          // },
         };
       },
       inject: [ConfigService],

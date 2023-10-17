@@ -36,6 +36,9 @@ export class ValidUserGuard implements CanActivate {
       // NOTE because only these two apis dont have req.user bcz they are public
       const phoneNumber = body.countryCode + body.phoneNumber;
       user = await this.usersService.findByPhoneNumber(phoneNumber);
+      if (!user)
+        // Means it's a brand-new user
+        return true;
     }
 
     if (!user) {

@@ -37,6 +37,11 @@ export class User {
 
   @Prop({ default: UserStatus.UNVERIFIED })
   status: UserStatus;
+
+  // TODO add keys
+  // notificationStatus = 0, 1 -> only admin can toggle it when mark blocked must be set to zero
+  // appId = // deviceId -> need to add update support in user update api as well
+  // current location lat lon -> need to add update support in user update api as well
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
