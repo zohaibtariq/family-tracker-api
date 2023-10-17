@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, SchemaTypes, Types } from 'mongoose';
 
 export type GroupDocument = Group & Document;
 
@@ -16,8 +16,8 @@ export class Group extends Document {
   @Prop({ required: true, unique: true, dropDupes: true })
   code: string;
 
-  @Prop({ required: true })
-  userId: Types.ObjectId;
+  @Prop({ required: true, type: SchemaTypes.ObjectId, ref: 'User' })
+  groupOwner: Types.ObjectId; //createdBy
 
   @Prop({ default: 0 })
   zoom: number;
@@ -33,6 +33,14 @@ export class Group extends Document {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }] })
+  groupAdmins: Types.ObjectId[];
+
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }] })
+  members: Types.ObjectId[];
+
+  // TODO:: add landmarks locations and do complete work related to landmark add edit update delete
 }
 
 const GroupSchema = SchemaFactory.createForClass(Group);

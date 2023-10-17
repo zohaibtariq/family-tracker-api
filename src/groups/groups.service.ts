@@ -20,7 +20,7 @@ export class GroupsService {
   ): Promise<GroupDocument> {
     // TODO define how many groups can a user create in setting
     const groupNameCount = await this.groupsRepository.countDocuments({
-      userId,
+      groupOwner: userId,
       name: createGroupDto.name,
     });
     // console.log('groupNameCount');
@@ -36,19 +36,23 @@ export class GroupsService {
     // console.log(code);
     // console.log(userId);
     // TODO once a group is created its own user will be auto linked with group_users
-    return this.groupsRepository.create({ ...createGroupDto, code, userId });
+    return this.groupsRepository.create({
+      ...createGroupDto,
+      code,
+      groupOwner: userId,
+      members: [userId],
+    });
   }
 
   createOrUpdate(filter = {}, update = {}, options = {}) {
     return this.groupsRepository.findOneAndUpdate(filter, update, options);
   }
 
-  findOne(id: Types.ObjectId) {
+  findOne(groupId: Types.ObjectId) {
     // TODO here when getting group detail also get members/users of a group
-    return this.groupsRepository.findById(id, {
+    return this.groupsRepository.findById(groupId, {
       isActive: 0,
       __v: 0,
-      userId: 0,
     });
   }
 
@@ -56,9 +60,10 @@ export class GroupsService {
   //   return this.groupsRepository.findById(id, projection);
   // }
 
-  findAll(id: Types.ObjectId): Promise<GroupDocument[]> {
-    return this.groupsRepository.find(
-      { userId: id, isActive: true },
+  async findAll(loggedInUserId: Types.ObjectId): Promise<GroupDocument[]> {
+    // NOTE fetch loggedInUser created groups
+    return await this.groupsRepository.find(
+      { groupOwner: loggedInUserId, isActive: true },
       {
         isActive: 0,
         __v: 0,
@@ -66,7 +71,6 @@ export class GroupsService {
         updated: 0,
         radius: 0,
         zoom: 0,
-        userId: 0,
       },
     );
   }
@@ -93,5 +97,43 @@ export class GroupsService {
 
   async remove(id: Types.ObjectId) {
     return this.groupsRepository.findByIdAndRemove(id);
+  }
+
+  async findGroupsForUser(userId: Types.ObjectId): Promise<GroupDocument[]> {
+    // TODO need to implement pagination here
+    return await this.groupsRepository.find({
+      isActive: true,
+      $or: [
+        { groupOwner: userId },
+        { groupAdmins: userId },
+        { members: userId },
+      ],
+    });
+    // userId = new Types.ObjectId(userId);
+    // const groups = await this.groupsRepository.aggregate([
+    //   {
+    //     $match: {
+    //       $or: [{ groupOwner: userId }, { 'groupAdmins.userId': userId }],
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: 'group_users', // Name of the other collection
+    //       localField: 'groupOwner', // Field from the 'groups' collection
+    //       foreignField: 'userId', // Field from the 'group_users' collection
+    //       as: 'groupUsers',
+    //     },
+    //   },
+    // {
+    //   $unwind: '$groupUsers',
+    // },
+    // {
+    //   $match: {
+    //     $or: [{ 'groupUsers.userId': userId }, { groupOwner: userId }],
+    //   },
+    // },
+    // ]);
+    //
+    // return groups;
   }
 }
