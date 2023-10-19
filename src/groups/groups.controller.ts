@@ -19,9 +19,11 @@ import { RequestUserInterface } from '../users/interfaces/request-user-interface
 import { ResponseService } from '../response/response.service';
 import { Response } from 'express';
 import { Types } from 'mongoose';
-import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupUsersService } from './group.users.service';
 import { LandmarkDto } from './dto/landmark.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
+import { GroupAccessGuard } from './guards/group.access.guard';
+import { GroupAccess } from './decoraters/group.access.decorator';
 
 @UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('groups')
@@ -102,19 +104,47 @@ export class GroupsController {
   }
 
   @Post(':groupId/landmark')
+  @UseGuards(GroupAccessGuard)
+  @GroupAccess({
+    isOwnerRequired: true,
+    isAdminRequired: true,
+    isMemberRequired: true,
+  })
   async addLandmark(
     @Req() req: RequestUserInterface,
     @Res() res: Response,
     @Param('groupId') groupId: Types.ObjectId,
     @Body() landmarkDto: LandmarkDto,
   ) {
-    console.log(groupId);
-    console.log(landmarkDto);
+    // console.log(groupId);
+    // console.log(landmarkDto);
     return this.responseService.response(
       res,
-      await this.groupsService.addLandmark(req.user.id, groupId, landmarkDto),
+      await this.groupsService.addLandmark(
+        req.user.id,
+        groupId,
+        landmarkDto,
+        req.group,
+      ),
       '',
     );
+  }
+
+  @Patch(':groupId/circle')
+  @UseGuards(GroupAccessGuard)
+  @GroupAccess({
+    isOwnerRequired: true,
+    isAdminRequired: false,
+    isMemberRequired: false,
+  })
+  async updateCircle(
+    @Req() req: RequestUserInterface,
+    @Param('groupId') groupId: Types.ObjectId,
+    @Body() updateGroupDto: UpdateGroupDto,
+  ) {
+    return this.groupsService.update(req.user.id, groupId, updateGroupDto, {
+      new: true,
+    });
   }
 
   // TODO > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but latter the group joining logic will be updated via share URL so it's just for dev testing to test the flow
@@ -141,6 +171,12 @@ export class GroupsController {
   }
 
   @Patch(':groupId/landmark/:landMarkId')
+  @UseGuards(GroupAccessGuard)
+  @GroupAccess({
+    isOwnerRequired: true,
+    isAdminRequired: true,
+    isMemberRequired: true,
+  })
   async updateLandmark(
     @Req() req: RequestUserInterface,
     @Res() res: Response,
@@ -161,6 +197,12 @@ export class GroupsController {
   }
 
   @Delete(':groupId/landmark/:landMarkId')
+  @UseGuards(GroupAccessGuard)
+  @GroupAccess({
+    isOwnerRequired: true,
+    isAdminRequired: true,
+    isMemberRequired: true,
+  })
   async deleteLandmark(
     @Req() req: RequestUserInterface,
     @Res() res: Response,
@@ -174,16 +216,39 @@ export class GroupsController {
     );
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: Types.ObjectId,
+  @Patch(':groupId')
+  @UseGuards(GroupAccessGuard)
+  @GroupAccess({
+    isOwnerRequired: true,
+    isAdminRequired: false,
+    isMemberRequired: false,
+  })
+  async update(
+    @Req() req: RequestUserInterface,
+    @Param('groupId') groupId: Types.ObjectId,
     @Body() updateGroupDto: UpdateGroupDto,
   ) {
-    return this.groupsService.update(id, updateGroupDto);
+    return this.groupsService.update(req.user.id, groupId, updateGroupDto, {
+      new: true,
+    });
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: Types.ObjectId) {
-    return this.groupsService.remove(id);
+  @Delete(':groupId')
+  async remove(
+    @Req() req: RequestUserInterface,
+    @Param('groupId') groupId: Types.ObjectId,
+  ) {
+    await this.groupsService.checkGroupAccess(req.user.id, groupId, {
+      isOwnerRequired: false,
+      isAdminRequired: false,
+      isMemberRequired: true,
+    });
+    return this.groupsService.remove(groupId);
   }
+
+  // TODO add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to ASK (owner, admin, member)
+
+  // TODO mark group member an admin functionality
+
+  // TODO ASK what special feature does group owner, admin or member has ?
 }

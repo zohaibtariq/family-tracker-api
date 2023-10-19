@@ -19,11 +19,19 @@ export class Group extends Document {
   @Prop({ required: true, type: SchemaTypes.ObjectId, ref: 'User' })
   groupOwner: Types.ObjectId; //createdBy
 
-  @Prop({ default: 0 })
-  zoom: number;
+  @Prop({
+    required: true,
+    type: Object,
+    latitude: Number,
+    longitude: Number,
+  })
+  circleCenter: {
+    latitude: number;
+    longitude: number;
+  };
 
   @Prop({ default: 0 })
-  radius: number;
+  circleRadius: number;
 
   @Prop({ default: '' })
   deepLink: string;
