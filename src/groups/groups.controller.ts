@@ -21,6 +21,7 @@ import { Response } from 'express';
 import { Types } from 'mongoose';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupUsersService } from './group.users.service';
+import { LandmarkDto } from './dto/landmark.dto';
 
 @UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('groups')
@@ -48,29 +49,6 @@ export class GroupsController {
     const { id, code } = newGroup;
     await this.assignGroupWithUser(id, req.user.id);
     return this.responseService.response(res, { code }, '', HttpStatus.CREATED);
-  }
-
-  // TODO > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but latter the group joining logic will be updated via share URL so it's just for dev testing to test the flow
-  @Post(':groupId/:userId')
-  async joinGroup(
-    @Req() req: RequestUserInterface,
-    @Res() res: Response,
-    @Param('groupId') groupId: Types.ObjectId,
-    @Param('userId') userId: Types.ObjectId,
-  ) {
-    // console.log(groupId);
-    // console.log(userId);
-    groupId = new Types.ObjectId(groupId);
-    userId = new Types.ObjectId(userId);
-    // console.log(groupId);
-    // console.log(userId);
-    await this.groupsService.createOrUpdate(
-      { _id: groupId },
-      { $addToSet: { members: userId } },
-      { new: true, upsert: true },
-    );
-    const joined = await this.assignGroupWithUser(groupId, userId);
-    return this.responseService.response(res, joined, '', HttpStatus.CREATED);
   }
 
   async assignGroupWithUser(groupId: Types.ObjectId, userId: Types.ObjectId) {
@@ -118,6 +96,79 @@ export class GroupsController {
     return this.responseService.response(
       res,
       await this.groupsService.findOne(groupId), // TODO write transformation logic here like with members highlight owner and admin with users members
+      '',
+    );
+  }
+
+  @Post(':groupId/landmark')
+  async addLandmark(
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+    @Param('groupId') groupId: Types.ObjectId,
+    @Body() landmarkDto: LandmarkDto,
+  ) {
+    console.log(groupId);
+    console.log(landmarkDto);
+    return this.responseService.response(
+      res,
+      await this.groupsService.addLandmark(req.user.id, groupId, landmarkDto),
+      '',
+    );
+  }
+
+  // TODO > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but latter the group joining logic will be updated via share URL so it's just for dev testing to test the flow
+  @Post(':groupId/:userId')
+  async joinGroup(
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+    @Param('groupId') groupId: Types.ObjectId,
+    @Param('userId') userId: Types.ObjectId,
+  ) {
+    // console.log(groupId);
+    // console.log(userId);
+    groupId = new Types.ObjectId(groupId);
+    userId = new Types.ObjectId(userId);
+    // console.log(groupId);
+    // console.log(userId);
+    await this.groupsService.createOrUpdate(
+      { _id: groupId },
+      { $addToSet: { members: userId } },
+      { new: true, upsert: true },
+    );
+    const joined = await this.assignGroupWithUser(groupId, userId);
+    return this.responseService.response(res, joined, '', HttpStatus.CREATED);
+  }
+
+  @Patch(':groupId/landmark/:landMarkId')
+  async updateLandmark(
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+    @Param('groupId') groupId: Types.ObjectId,
+    @Param('landMarkId') landMarkId: Types.ObjectId,
+    @Body() landmarkDto: LandmarkDto,
+  ) {
+    return this.responseService.response(
+      res,
+      await this.groupsService.updateLandmark(
+        req.user.id,
+        groupId,
+        landMarkId,
+        landmarkDto,
+      ),
+      '',
+    );
+  }
+
+  @Delete(':groupId/landmark/:landMarkId')
+  async deleteLandmark(
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+    @Param('groupId') groupId: Types.ObjectId,
+    @Param('landMarkId') landMarkId: Types.ObjectId,
+  ) {
+    return this.responseService.response(
+      res,
+      await this.groupsService.deleteLandmark(req.user.id, groupId, landMarkId),
       '',
     );
   }

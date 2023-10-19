@@ -4,6 +4,7 @@ import { GroupDocument } from './schemas/group.schema';
 import { GroupsRepository } from './groups.repository';
 import { generateUniqueCode } from '../utils/helpers';
 import { Types } from 'mongoose';
+import { LandmarkDto } from './dto/landmark.dto';
 // import { I18nService } from 'nestjs-i18n';
 
 // import { SettingsService } from '../settings/settings.service';
@@ -54,6 +55,99 @@ export class GroupsService {
       isActive: 0,
       __v: 0,
     });
+  }
+
+  async checkIfGroupAdmin(
+    loggedInUserId: Types.ObjectId,
+    groupId: Types.ObjectId,
+  ) {
+    // Check if the landmark already exists in the group
+    const group = await this.groupsRepository.findNonPopulatedById(
+      new Types.ObjectId(groupId),
+    );
+    if (!group) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    }
+    // Check if the user is an admin or the owner
+    // TODO need to check if landmarks only allowed to be add update delete by admin or all ? current code is only allowed to admin
+    loggedInUserId = new Types.ObjectId(loggedInUserId); // NOTE can work without this too
+    const isUserAdmin = group.groupAdmins.includes(loggedInUserId);
+    const isUserOwner = group.groupOwner.equals(loggedInUserId);
+
+    if (!isUserAdmin && !isUserOwner) {
+      throw new HttpException(
+        'Land Mark can only be changed by an group admin',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    return group;
+  }
+
+  async addLandmark(
+    loggedInUserId: Types.ObjectId,
+    groupId: Types.ObjectId,
+    landmarkDto: LandmarkDto,
+  ) {
+    const group = await this.checkIfGroupAdmin(loggedInUserId, groupId);
+    // NOTE: remove this check if all group users are allowed to add landmark
+    const existingLandmark = group.landmarks.find(
+      (landmark) =>
+        landmark.latitude === landmarkDto.latitude &&
+        landmark.longitude === landmarkDto.longitude,
+    );
+
+    if (existingLandmark) {
+      // throw new HttpException('Landmark already exists', HttpStatus.CONFLICT);
+      return group;
+    }
+
+    const updatedGroup = await this.groupsRepository.findOneAndUpdate(
+      { _id: new Types.ObjectId(groupId) },
+      {
+        $addToSet: { landmarks: landmarkDto },
+      },
+      { new: true },
+    );
+    return updatedGroup;
+  }
+
+  async updateLandmark(
+    loggedInUserId: Types.ObjectId,
+    groupId: Types.ObjectId,
+    landmarkId: Types.ObjectId,
+    landmarkDto: LandmarkDto,
+  ) {
+    await this.checkIfGroupAdmin(loggedInUserId, groupId);
+    const updatedGroup = await this.groupsRepository.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(groupId),
+        'landmarks._id': new Types.ObjectId(landmarkId),
+      },
+      {
+        $set: {
+          'landmarks.$.latitude': landmarkDto.latitude,
+          'landmarks.$.longitude': landmarkDto.longitude,
+        },
+      },
+      { new: true },
+    );
+
+    return updatedGroup;
+  }
+
+  async deleteLandmark(
+    loggedInUserId: Types.ObjectId,
+    groupId: Types.ObjectId,
+    landmarkId: Types.ObjectId,
+  ) {
+    await this.checkIfGroupAdmin(loggedInUserId, groupId);
+    const updatedGroup = await this.groupsRepository.findOneAndUpdate(
+      { _id: new Types.ObjectId(groupId) },
+      { $pull: { landmarks: { _id: new Types.ObjectId(landmarkId) } } },
+      { new: true },
+    );
+
+    return updatedGroup;
   }
 
   // async findById(id: Types.ObjectId, projection = {}): Promise<GroupDocument> {

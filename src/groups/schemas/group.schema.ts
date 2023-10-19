@@ -40,7 +40,16 @@ export class Group extends Document {
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }] })
   members: Types.ObjectId[];
 
-  // TODO:: add landmarks locations and do complete work related to landmark add edit update delete
+  @Prop({
+    type: [
+      {
+        latitude: { type: Number, required: true },
+        longitude: { type: Number, required: true },
+      },
+    ],
+    default: [],
+  })
+  landmarks: { latitude: number; longitude: number }[];
 }
 
 const GroupSchema = SchemaFactory.createForClass(Group);
