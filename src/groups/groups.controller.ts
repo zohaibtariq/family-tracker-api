@@ -26,6 +26,7 @@ import { LandmarkDto } from './dto/landmark.dto';
 @UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('groups')
 export class GroupsController {
+  // TODO need to add security checks of admin and user at everywhere action must be permitted or data must be fetched if you have some rights or access
   constructor(
     private readonly groupsService: GroupsService,
     private readonly groupUsersService: GroupUsersService,
