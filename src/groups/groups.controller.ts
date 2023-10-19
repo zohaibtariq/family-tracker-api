@@ -245,4 +245,10 @@ export class GroupsController {
     });
     return this.groupsService.remove(groupId);
   }
+
+  // TODO add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to ASK (owner, admin, member)
+
+  // TODO mark group member an admin functionality
+
+  // TODO ASK what special feature does group owner, admin or member has ?
 }
