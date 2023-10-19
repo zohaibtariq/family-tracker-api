@@ -16,4 +16,5 @@ export interface JWTUserInterface {
 export interface RequestUserInterface {
   user: JWTUserInterface;
   headers: AuthorizationHeaderInterface;
+  group: any;
 }

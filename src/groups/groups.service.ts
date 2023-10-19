@@ -5,6 +5,7 @@ import { GroupsRepository } from './groups.repository';
 import { generateUniqueCode } from '../utils/helpers';
 import { Types } from 'mongoose';
 import { LandmarkDto } from './dto/landmark.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 // import { I18nService } from 'nestjs-i18n';
 
 // import { SettingsService } from '../settings/settings.service';
@@ -57,26 +58,48 @@ export class GroupsService {
     });
   }
 
-  async checkIfGroupAdmin(
+  async checkGroupAccess(
     loggedInUserId: Types.ObjectId,
     groupId: Types.ObjectId,
+    accessOptions: any = {
+      isOwnerRequired: true,
+      isAdminRequired: true,
+      isMemberRequired: true,
+    },
   ) {
-    // Check if the landmark already exists in the group
-    const group = await this.groupsRepository.findNonPopulatedById(
-      new Types.ObjectId(groupId),
-    );
+    groupId = new Types.ObjectId(groupId);
+    loggedInUserId = new Types.ObjectId(loggedInUserId);
+    const group = await this.groupsRepository.findNonPopulatedById(groupId);
     if (!group) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
-    // Check if the user is an admin or the owner
-    // TODO need to check if landmarks only allowed to be add update delete by admin or all ? current code is only allowed to admin
-    loggedInUserId = new Types.ObjectId(loggedInUserId); // NOTE can work without this too
-    const isUserAdmin = group.groupAdmins.includes(loggedInUserId);
-    const isUserOwner = group.groupOwner.equals(loggedInUserId);
-
-    if (!isUserAdmin && !isUserOwner) {
+    const isOwner = group.groupOwner.equals(loggedInUserId);
+    const isAdmin = group.groupAdmins.includes(loggedInUserId);
+    const isMember = group.members.includes(loggedInUserId);
+    // console.log('isOwner');
+    // console.log(isOwner);
+    // console.log('isAdmin');
+    // console.log(isAdmin);
+    // console.log('isMember');
+    // console.log(isMember);
+    if (accessOptions.isOwnerRequired && !isOwner) {
+      // console.log('HttpException owner');
       throw new HttpException(
-        'Land Mark can only be changed by an group admin',
+        'Only group owner can access!',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (accessOptions.isAdminRequired && !isAdmin && !isOwner) {
+      // console.log('HttpException admin');
+      throw new HttpException(
+        'Only group admins can access!',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (accessOptions.isMemberRequired && !isAdmin && !isOwner && !isMember) {
+      // console.log('HttpException members');
+      throw new HttpException(
+        'Only group members can access!',
         HttpStatus.FORBIDDEN,
       );
     }
@@ -87,8 +110,13 @@ export class GroupsService {
     loggedInUserId: Types.ObjectId,
     groupId: Types.ObjectId,
     landmarkDto: LandmarkDto,
+    group: any,
   ) {
-    const group = await this.checkIfGroupAdmin(loggedInUserId, groupId);
+    // const group = await this.checkGroupAccess(loggedInUserId, groupId, {
+    //   isOwnerRequired: true,
+    //   isAdminRequired: true,
+    //   isMemberRequired: true,
+    // });
     // NOTE: remove this check if all group users are allowed to add landmark
     const existingLandmark = group.landmarks.find(
       (landmark) =>
@@ -117,7 +145,11 @@ export class GroupsService {
     landmarkId: Types.ObjectId,
     landmarkDto: LandmarkDto,
   ) {
-    await this.checkIfGroupAdmin(loggedInUserId, groupId);
+    // await this.checkGroupAccess(loggedInUserId, groupId, {
+    //   isOwnerRequired: true,
+    //   isAdminRequired: true,
+    //   isMemberRequired: true,
+    // });
     const updatedGroup = await this.groupsRepository.findOneAndUpdate(
       {
         _id: new Types.ObjectId(groupId),
@@ -140,13 +172,16 @@ export class GroupsService {
     groupId: Types.ObjectId,
     landmarkId: Types.ObjectId,
   ) {
-    await this.checkIfGroupAdmin(loggedInUserId, groupId);
+    // await this.checkGroupAccess(loggedInUserId, groupId, {
+    //   isOwnerRequired: true,
+    //   isAdminRequired: true,
+    //   isMemberRequired: true,
+    // });
     const updatedGroup = await this.groupsRepository.findOneAndUpdate(
       { _id: new Types.ObjectId(groupId) },
       { $pull: { landmarks: { _id: new Types.ObjectId(landmarkId) } } },
       { new: true },
     );
-
     return updatedGroup;
   }
 
@@ -163,8 +198,8 @@ export class GroupsService {
         __v: 0,
         created: 0,
         updated: 0,
-        radius: 0,
-        zoom: 0,
+        circleRadius: 0,
+        circleCenter: 0,
       },
     );
   }
@@ -174,11 +209,36 @@ export class GroupsService {
   }
 
   async update(
-    id: Types.ObjectId,
-    updateGroupDto: object,
+    userId: Types.ObjectId,
+    groupId: Types.ObjectId,
+    updateGroupDto: UpdateGroupDto,
     options = {},
   ): Promise<GroupDocument> {
-    return this.groupsRepository.findByIdAndUpdate(id, updateGroupDto, options);
+    if (updateGroupDto.name) {
+      // await this.checkGroupAccess(userId, groupId, {
+      //   isOwnerRequired: true,
+      //   isAdminRequired: false,
+      //   isMemberRequired: false,
+      // });
+      return this.groupsRepository.findByIdAndUpdate(
+        groupId,
+        updateGroupDto,
+        options,
+      );
+    } else {
+      // await this.checkGroupAccess(userId, groupId, {
+      //   isOwnerRequired: true,
+      //   isAdminRequired: false,
+      //   isMemberRequired: false,
+      // });
+      return this.groupsRepository.findByIdAndUpdate(
+        groupId,
+        {
+          $set: updateGroupDto,
+        },
+        options,
+      );
+    }
   }
 
   // async delete(id: Types.ObjectId): Promise<GroupDocument> {

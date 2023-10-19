@@ -207,6 +207,34 @@ export class DatabaseSeeder {
         key: 'reset_otp_retry_hours',
         value: 0.0166667, // 24, 0.0166667 = 1min
       },
+      // { // TODO inform to app dev's
+      //   key: 'map_init_center',
+      //   value: { lat: 40.7128, lng: -74.006 }, // this will be user current lat long
+      // },
+      {
+        key: 'map_init_zoom',
+        value: 12,
+      },
+      {
+        key: 'map_circle_stroke_color',
+        value: '#FF0000',
+      },
+      {
+        key: 'map_stroke_opacity',
+        value: 0.8,
+      },
+      {
+        key: 'map_stroke_weight',
+        value: 2,
+      },
+      {
+        key: 'map_fill_color',
+        value: '#FF0000',
+      },
+      {
+        key: 'map_fill_opacity',
+        value: 0.35,
+      },
     ];
     // console.log('staticSettings');
     // console.log(staticSettings);
