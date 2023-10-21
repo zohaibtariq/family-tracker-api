@@ -10,21 +10,32 @@ export class SettingsService {
     private readonly i18n: I18nService,
   ) {}
 
-  async findAll() {
+  async findAll(filter = {}) {
     // TODO should be cached with redis
-    return await this.settingsRepository.find().then((settings) => {
-      const allSettings = {};
-      settings.forEach((setting) => {
-        allSettings[setting.key] = setting.value;
-        return allSettings;
-      });
-      return allSettings;
-    });
+    return this.transformSettings(await this.settingsRepository.find(filter));
   }
 
-  async get(key: string = '') {
+  async findByGroup(module: string, group: string) {
     // TODO should be cached with redis
-    const settings = await this.findAll();
+    return this.transformSettings(
+      await this.settingsRepository.find({ module, group }),
+    );
+  }
+
+  transformSettings(settings: any) {
+    // return settings.then((settings) => {
+    const allSettings = {};
+    settings.forEach((setting) => {
+      allSettings[setting.key] = setting.value;
+      return allSettings;
+    });
+    return allSettings;
+    // });
+  }
+
+  async get(key: string = '', filters = {}) {
+    // TODO should be cached with redis
+    const settings = await this.findAll(filters);
     return settings[key];
   }
 

@@ -6,6 +6,7 @@ import { generateUniqueCode } from '../utils/helpers';
 import { Types } from 'mongoose';
 import { LandmarkDto } from './dto/landmark.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { SettingsService } from '../settings/settings.service';
 // import { I18nService } from 'nestjs-i18n';
 
 // import { SettingsService } from '../settings/settings.service';
@@ -13,16 +14,18 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 @Injectable()
 export class GroupsService {
   constructor(
-    private readonly groupsRepository: GroupsRepository, // private readonly i18n: I18nService, // private readonly settingsService: SettingsService,
+    private readonly groupsRepository: GroupsRepository,
+    // private readonly settingsRepository: SettingsRepository,
+    private readonly settingsService: SettingsService, // private readonly i18n: I18nService, // private readonly settingsService: SettingsService,
   ) {}
 
   async create(
     createGroupDto: CreateGroupDto,
-    userId: Types.ObjectId,
+    loggedInUserId: Types.ObjectId,
   ): Promise<GroupDocument> {
     // TODO define how many groups can a user create in setting
     const groupNameCount = await this.groupsRepository.countDocuments({
-      groupOwner: userId,
+      groupOwner: loggedInUserId,
       name: createGroupDto.name,
     });
     // console.log('groupNameCount');
@@ -32,17 +35,30 @@ export class GroupsService {
         'You cannot create multiple group with same name.',
         HttpStatus.UNPROCESSABLE_ENTITY,
       ); // TODO do translation of message
-    const code = await generateUniqueCode(this.groupsRepository, 'code', 6); // TODO set this length from admin settings
+    const codeLength = await this.settingsService.get(
+      'group_share_code_length',
+      {
+        module: 'group',
+        group: 'group',
+      },
+    );
+    // console.log('codeLength');
+    // console.log(codeLength);
+    const code = await generateUniqueCode(
+      this.groupsRepository,
+      'code',
+      codeLength,
+    );
     // console.log('CREATE GROUP');
     // console.log(createGroupDto);
     // console.log(code);
     // console.log(userId);
-    // TODO once a group is created its own user will be auto linked with group_users
     return this.groupsRepository.create({
       ...createGroupDto,
       code,
-      groupOwner: userId,
-      members: [userId],
+      groupOwner: loggedInUserId,
+      members: [loggedInUserId],
+      groupAdmins: [loggedInUserId],
     });
   }
 
@@ -51,7 +67,6 @@ export class GroupsService {
   }
 
   findOne(groupId: Types.ObjectId) {
-    // TODO here when getting group detail also get members/users of a group
     return this.groupsRepository.findById(groupId, {
       isActive: 0,
       __v: 0,
@@ -62,9 +77,9 @@ export class GroupsService {
     loggedInUserId: Types.ObjectId,
     groupId: Types.ObjectId,
     accessOptions: any = {
-      isOwnerRequired: true,
-      isAdminRequired: true,
-      isMemberRequired: true,
+      isOwner: true,
+      isAdmin: true,
+      isMember: true,
     },
   ) {
     groupId = new Types.ObjectId(groupId);
@@ -82,21 +97,21 @@ export class GroupsService {
     // console.log(isAdmin);
     // console.log('isMember');
     // console.log(isMember);
-    if (accessOptions.isOwnerRequired && !isOwner) {
+    if (accessOptions.isOwner && !isOwner) {
       // console.log('HttpException owner');
       throw new HttpException(
         'Only group owner can access!',
         HttpStatus.FORBIDDEN,
       );
     }
-    if (accessOptions.isAdminRequired && !isAdmin && !isOwner) {
+    if (accessOptions.isAdmin && !isAdmin && !isOwner) {
       // console.log('HttpException admin');
       throw new HttpException(
         'Only group admins can access!',
         HttpStatus.FORBIDDEN,
       );
     }
-    if (accessOptions.isMemberRequired && !isAdmin && !isOwner && !isMember) {
+    if (accessOptions.isMember && !isAdmin && !isOwner && !isMember) {
       // console.log('HttpException members');
       throw new HttpException(
         'Only group members can access!',
@@ -106,17 +121,28 @@ export class GroupsService {
     return group;
   }
 
+  buildUserGroupAccess(loggedInUserId: Types.ObjectId, group: any) {
+    // loggedInUserId = new Types.ObjectId(loggedInUserId);
+    const groupOwnerId = group.groupOwner._id.toString();
+    const groupAdmins = group.groupAdmins.map((obj) => obj._id.toString());
+    const members = group.members.map((obj) => obj._id.toString());
+    // console.log(loggedInUserId);
+    // console.log(groupOwnerId);
+    // console.log(groupAdmins);
+    // console.log(members);
+    return {
+      isOwner: Boolean(groupOwnerId === loggedInUserId),
+      isAdmin: Boolean(groupAdmins.includes(loggedInUserId)),
+      isMember: Boolean(members.includes(loggedInUserId)),
+    };
+  }
+
   async addLandmark(
     loggedInUserId: Types.ObjectId,
     groupId: Types.ObjectId,
     landmarkDto: LandmarkDto,
     group: any,
   ) {
-    // const group = await this.checkGroupAccess(loggedInUserId, groupId, {
-    //   isOwnerRequired: true,
-    //   isAdminRequired: true,
-    //   isMemberRequired: true,
-    // });
     // NOTE: remove this check if all group users are allowed to add landmark
     const existingLandmark = group.landmarks.find(
       (landmark) =>
@@ -132,7 +158,7 @@ export class GroupsService {
     const updatedGroup = await this.groupsRepository.findOneAndUpdate(
       { _id: new Types.ObjectId(groupId) },
       {
-        $addToSet: { landmarks: landmarkDto },
+        $addToSet: { landmarks: landmarkDto }, // TODO if we have a requirement in future that a landmark created by a member can only be updated or deleted by that same member or admin or super admin only so we have to add markedBy userId here to cater member access separation logic
       },
       { new: true },
     );
@@ -145,11 +171,6 @@ export class GroupsService {
     landmarkId: Types.ObjectId,
     landmarkDto: LandmarkDto,
   ) {
-    // await this.checkGroupAccess(loggedInUserId, groupId, {
-    //   isOwnerRequired: true,
-    //   isAdminRequired: true,
-    //   isMemberRequired: true,
-    // });
     const updatedGroup = await this.groupsRepository.findOneAndUpdate(
       {
         _id: new Types.ObjectId(groupId),
@@ -172,11 +193,6 @@ export class GroupsService {
     groupId: Types.ObjectId,
     landmarkId: Types.ObjectId,
   ) {
-    // await this.checkGroupAccess(loggedInUserId, groupId, {
-    //   isOwnerRequired: true,
-    //   isAdminRequired: true,
-    //   isMemberRequired: true,
-    // });
     const updatedGroup = await this.groupsRepository.findOneAndUpdate(
       { _id: new Types.ObjectId(groupId) },
       { $pull: { landmarks: { _id: new Types.ObjectId(landmarkId) } } },
@@ -215,22 +231,12 @@ export class GroupsService {
     options = {},
   ): Promise<GroupDocument> {
     if (updateGroupDto.name) {
-      // await this.checkGroupAccess(userId, groupId, {
-      //   isOwnerRequired: true,
-      //   isAdminRequired: false,
-      //   isMemberRequired: false,
-      // });
       return this.groupsRepository.findByIdAndUpdate(
         groupId,
         updateGroupDto,
         options,
       );
     } else {
-      // await this.checkGroupAccess(userId, groupId, {
-      //   isOwnerRequired: true,
-      //   isAdminRequired: false,
-      //   isMemberRequired: false,
-      // });
       return this.groupsRepository.findByIdAndUpdate(
         groupId,
         {

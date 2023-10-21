@@ -24,14 +24,15 @@ import { LandmarkDto } from './dto/landmark.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupAccessGuard } from './guards/group.access.guard';
 import { GroupAccess } from './decoraters/group.access.decorator';
+import { SettingsService } from '../settings/settings.service';
 
 @UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('groups')
 export class GroupsController {
-  // TODO need to add security checks of admin and user at everywhere action must be permitted or data must be fetched if you have some rights or access
   constructor(
     private readonly groupsService: GroupsService,
     private readonly groupUsersService: GroupUsersService,
+    private readonly settingsService: SettingsService,
     private readonly responseService: ResponseService,
   ) {}
 
@@ -42,6 +43,7 @@ export class GroupsController {
     @Body() createGroupDto: CreateGroupDto,
   ) {
     // TODO need to discuss share link, deeplink mechanism via firebase
+    // TODO need to add family relation see designs
     // console.log('req.user.id');
     // console.log(req.user.id);
     const newGroup = await this.groupsService.create(
@@ -82,7 +84,7 @@ export class GroupsController {
     // TODO need to show count of users joined in a group
     return this.responseService.response(
       res,
-      await this.groupsService.findGroupsForUser(req.user.id), // TODO might need transformer just to show members count
+      await this.groupsService.findGroupsForUser(req.user.id), // TODO might need transformer just to show members count, it can be done via length of members
       '',
     );
   }
@@ -95,21 +97,27 @@ export class GroupsController {
   ) {
     // console.log('GET id');
     // console.log(id);
-    // TODO here need to fetch those users groupAdmins who are linked with that group
+    const group = await this.groupsService.findOne(groupId); // TODO write transformation logic here like with members highlight owner and admin with users members
     return this.responseService.response(
       res,
-      await this.groupsService.findOne(groupId), // TODO write transformation logic here like with members highlight owner and admin with users members
+      {
+        group,
+        userGroupAccess: this.groupsService.buildUserGroupAccess(
+          req.user.id,
+          group,
+        ),
+        requiredGroupAccess: await this.settingsService.findByGroup(
+          'group',
+          'group_access',
+        ),
+      },
       '',
     );
   }
 
   @Post(':groupId/landmark')
   @UseGuards(GroupAccessGuard)
-  @GroupAccess({
-    isOwnerRequired: true,
-    isAdminRequired: true,
-    isMemberRequired: true,
-  })
+  @GroupAccess('group_add_landmark')
   async addLandmark(
     @Req() req: RequestUserInterface,
     @Res() res: Response,
@@ -132,11 +140,7 @@ export class GroupsController {
 
   @Patch(':groupId/circle')
   @UseGuards(GroupAccessGuard)
-  @GroupAccess({
-    isOwnerRequired: true,
-    isAdminRequired: false,
-    isMemberRequired: false,
-  })
+  @GroupAccess('group_circle_create_update')
   async updateCircle(
     @Req() req: RequestUserInterface,
     @Param('groupId') groupId: Types.ObjectId,
@@ -147,6 +151,7 @@ export class GroupsController {
     });
   }
 
+  // TODO need to write a logic to join loggedin user with share code as well
   // TODO > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but latter the group joining logic will be updated via share URL so it's just for dev testing to test the flow
   @Post(':groupId/:userId')
   async joinGroup(
@@ -172,11 +177,7 @@ export class GroupsController {
 
   @Patch(':groupId/landmark/:landMarkId')
   @UseGuards(GroupAccessGuard)
-  @GroupAccess({
-    isOwnerRequired: true,
-    isAdminRequired: true,
-    isMemberRequired: true,
-  })
+  @GroupAccess('group_update_landmark')
   async updateLandmark(
     @Req() req: RequestUserInterface,
     @Res() res: Response,
@@ -198,11 +199,7 @@ export class GroupsController {
 
   @Delete(':groupId/landmark/:landMarkId')
   @UseGuards(GroupAccessGuard)
-  @GroupAccess({
-    isOwnerRequired: true,
-    isAdminRequired: true,
-    isMemberRequired: true,
-  })
+  @GroupAccess('group_delete_landmark')
   async deleteLandmark(
     @Req() req: RequestUserInterface,
     @Res() res: Response,
@@ -218,11 +215,7 @@ export class GroupsController {
 
   @Patch(':groupId')
   @UseGuards(GroupAccessGuard)
-  @GroupAccess({
-    isOwnerRequired: true,
-    isAdminRequired: false,
-    isMemberRequired: false,
-  })
+  @GroupAccess('group_name_update')
   async update(
     @Req() req: RequestUserInterface,
     @Param('groupId') groupId: Types.ObjectId,
@@ -234,15 +227,12 @@ export class GroupsController {
   }
 
   @Delete(':groupId')
+  @UseGuards(GroupAccessGuard)
+  @GroupAccess('group_delete')
   async remove(
     @Req() req: RequestUserInterface,
     @Param('groupId') groupId: Types.ObjectId,
   ) {
-    await this.groupsService.checkGroupAccess(req.user.id, groupId, {
-      isOwnerRequired: false,
-      isAdminRequired: false,
-      isMemberRequired: true,
-    });
     return this.groupsService.remove(groupId);
   }
 
@@ -251,4 +241,7 @@ export class GroupsController {
   // TODO mark group member an admin functionality
 
   // TODO ASK what special feature does group owner, admin or member has ?
+
+  // TODO need to build a mechanism of how app will show hide action item for specific user over a group we need to make list of all action items and there access should be define as
+  //  well and there access must be pass dynamically as a metadata over endpoint, NEED TO VERIFY THIS I HAVE DONE THIS PART
 }

@@ -20,7 +20,6 @@ export class Group extends Document {
   groupOwner: Types.ObjectId; //createdBy
 
   @Prop({
-    required: true,
     type: Object,
     latitude: Number,
     longitude: Number,
