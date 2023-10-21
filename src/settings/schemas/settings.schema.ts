@@ -7,9 +7,21 @@ import { IsString } from 'class-validator';
   timestamps: { createdAt: 'created', updatedAt: 'updated' },
 })
 export class Settings {
-  @Prop({ required: true, unique: true, dropDupes: true })
+  @Prop({ required: true })
   @IsString()
   key: string;
+
+  @Prop({ required: true })
+  @IsString()
+  group: string;
+
+  @Prop({ required: true })
+  @IsString()
+  module: string;
+
+  @Prop({ required: true })
+  @IsString()
+  dataType: string;
 
   @Prop({ required: true })
   value: mongoose.Schema.Types.Mixed;
@@ -18,6 +30,9 @@ export class Settings {
 export type SettingsDocument = Settings & Document;
 
 const SettingsSchema = SchemaFactory.createForClass(Settings);
+
+SettingsSchema.index({ key: 1, group: 1, module: 1 }, { unique: true });
+
 SettingsSchema.methods.toJSON = function () {
   const obj = this.toObject();
   obj.id = obj._id;
