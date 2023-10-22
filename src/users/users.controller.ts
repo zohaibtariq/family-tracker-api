@@ -27,13 +27,11 @@ import {
   replacePlaceholders,
   VALID_IMAGE_MIME_TYPES,
 } from '../utils/helpers';
-import { I18n, I18nContext } from 'nestjs-i18n';
+import { I18n, I18nContext, I18nService } from 'nestjs-i18n';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
 import { Response } from 'express';
 import { ResponseService } from '../response/response.service';
-import { SettingsService } from '../settings/settings.service'; // import { FileContentInterceptor } from '../utils/FileContentInterceptor';
-import { Roles } from '../otp/decoraters/roles.decorator';
 
 // import { FileContentInterceptor } from '../utils/FileContentInterceptor';
 
@@ -43,12 +41,15 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly responseService: ResponseService,
-    private readonly settingsService: SettingsService,
+    private readonly i18nService: I18nService,
   ) {}
 
   @Get()
   // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
-  async findOne(@Req() req: RequestUserInterface, @Res() res: Response) {
+  async currentLoggedInUser(
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+  ) {
     return this.responseService.response(
       res,
       await this.usersService.findById(req.user.id),
@@ -56,28 +57,17 @@ export class UsersController {
   }
 
   @Patch()
-  // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: multerLocalOptionsStorage,
       fileFilter: imageFileFilter,
     }),
-    // FileContentInterceptor,
   )
   async update(
-    // @Param('id') id: Types.ObjectId,
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: RequestUserInterface,
     @Res() res: Response,
     @UploadedFile()
-    // new ParseFilePipeBuilder()
-    //   .addValidator(
-    //     new AvatarUploadValidator({
-    //       fileType: VALID_IMAGE_MIME_TYPES,
-    //     }),
-    //   )
-    //   .addMaxSizeValidator({ maxSize: MAX_FILE_SIZE_IN_BYTES })
-    //   .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     file,
     @I18n() i18n: I18nContext,
   ) {
@@ -88,13 +78,13 @@ export class UsersController {
       const isFileInLimit = file.size > MAX_FILE_SIZE_IN_BYTES;
       let errorMsg = '';
       if (isFileInLimit) {
-        errorMsg = replacePlaceholders(i18n.t('user.ERROR_FILE_SIZE_LARGE'), {
+        errorMsg = replacePlaceholders(i18n.t('global.ERROR_FILE_SIZE_LARGE'), {
           FILE_SIZE_MB: bytesToMB(file.size),
           MAX_FILE_SIZE_IN_MB: bytesToMB(MAX_FILE_SIZE_IN_BYTES),
         });
       } else if (!isValid) {
         errorMsg = replacePlaceholders(
-          i18n.t('user.ERROR_FILE_TYPE_NOT_ALLOWED'),
+          i18n.t('global.ERROR_FILE_TYPE_NOT_ALLOWED'),
           {
             FILE_MIME_TYPE: fileMimeType,
           },
@@ -110,39 +100,54 @@ export class UsersController {
       updateUserDto.avatar = file.filename;
     }
     const userId: Types.ObjectId = req.user.id;
-    updateUserDto.firstName = updateUserDto.firstName;
-    updateUserDto.lastName = updateUserDto.lastName;
     if (updateUserDto?.emergencyCountryCode && updateUserDto?.emergencyNumber)
       updateUserDto.emergencyNumber =
         updateUserDto.emergencyCountryCode + updateUserDto.emergencyNumber;
     if (updateUserDto?.emergencyCountryCode)
       delete updateUserDto.emergencyCountryCode; // NOTE: because we don't want to persist country code of emergency number
-    const updatedUser = await this.usersService.update(userId, updateUserDto, {
+    const loggedInUser = await this.usersService.findById(req.user.id);
+    const updateUserObj: any = {
+      ...updateUserDto,
+      currentLocation: loggedInUser.currentLocation,
+    };
+    if (updateUserObj?.currentLocationLatitude) {
+      updateUserObj.currentLocation['latitude'] = parseFloat(
+        updateUserObj?.currentLocationLatitude,
+      );
+      delete updateUserObj?.currentLocationLatitude;
+    }
+    if (updateUserObj?.currentLocationLongitude) {
+      updateUserObj.currentLocation['longitude'] = parseFloat(
+        updateUserObj?.currentLocationLongitude,
+      );
+      delete updateUserObj?.currentLocationLongitude;
+    }
+    const updatedUser = await this.usersService.update(userId, updateUserObj, {
       new: true,
     });
     return this.responseService.response(res, updatedUser);
   }
 
-  @Get('user-admin-superadmin')
-  async userAdminSuperGuard(
-    @Req() req: RequestUserInterface,
-    @Res() res: Response,
-  ) {
-    return this.responseService.response(res, 'USER | ADMIN | SUPER ADMIN');
-  }
-
-  @Get('admin-superadmin')
-  @Roles('admin', 'superadmin')
-  async adminSuperGuard(
-    @Req() req: RequestUserInterface,
-    @Res() res: Response,
-  ) {
-    return this.responseService.response(res, 'ADMIN | SUPER ADMIN');
-  }
-
-  @Get('superadmin')
-  @Roles('superadmin')
-  async superGuard(@Req() req: RequestUserInterface, @Res() res: Response) {
-    return this.responseService.response(res, 'SUPER ADMIN');
-  }
+  // @Get('user-admin-superadmin')
+  // async userAdminSuperGuard(
+  //   @Req() req: RequestUserInterface,
+  //   @Res() res: Response,
+  // ) {
+  //   return this.responseService.response(res, 'USER | ADMIN | SUPER ADMIN');
+  // }
+  //
+  // @Get('admin-superadmin')
+  // @Roles('admin', 'superadmin')
+  // async adminSuperGuard(
+  //   @Req() req: RequestUserInterface,
+  //   @Res() res: Response,
+  // ) {
+  //   return this.responseService.response(res, 'ADMIN | SUPER ADMIN');
+  // }
+  //
+  // @Get('superadmin')
+  // @Roles('superadmin')
+  // async superGuard(@Req() req: RequestUserInterface, @Res() res: Response) {
+  //   return this.responseService.response(res, 'SUPER ADMIN');
+  // }
 }

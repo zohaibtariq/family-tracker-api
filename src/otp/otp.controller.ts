@@ -46,10 +46,20 @@ export class OtpController {
   @Post('send')
   @UseGuards(ValidUserGuard) // NOTE Do not move it to top
   async send(
+    @Req() req: RequestUserInterface,
     @Res() res: Response,
     @Body() sendOtpDto: SendOtpDto,
     @I18n() i18n: I18nContext,
   ) {
+    // console.log(
+    //   req.i18nService.t('global.HELLO', {
+    //     lang: req.i18nContext.current().lang,
+    //   }),
+    // );
+    // console.log(req.i18nService.t('global.HELLO', { lang: req.i18nLang }));
+    // console.log(req.i18nContext.current().lang);
+    // console.log(req.i18nLang);
+    // console.log(req.i18nContext);
     const phoneNumber = sendOtpDto.countryCode + sendOtpDto.phoneNumber;
     const user = await this.usersService.createOrUpdate(
       {
@@ -79,13 +89,15 @@ export class OtpController {
           phoneNumber: createdResponse.phoneNumber,
           otp: createdResponse.otp,
         },
-        replacePlaceholders(i18n.t('otp_send.OTP_SENT_MSG'), {
+        // replacePlaceholders(i18n.t('otp_send.OTP_SENT_MSG'), {
+        replacePlaceholders(i18n.t('global.OTP_SENT_MSG'), {
           PHONE_NUMBER: phoneNumber,
         }),
       );
     } else
       throw new HttpException(
-        replacePlaceholders(i18n.t('otp_send.OTP_MAX_RETRY_EXCEPTION'), {
+        // replacePlaceholders(i18n.t('otp_send.OTP_MAX_RETRY_EXCEPTION'), {
+        replacePlaceholders(i18n.t('global.OTP_MAX_RETRY_EXCEPTION'), {
           MAX_RETRY_LIMIT: settings.max_retry_limit,
           RESET_OTP_RETRY_HOURS: settings.reset_otp_retry_hours,
         }),
@@ -106,7 +118,8 @@ export class OtpController {
       return this.responseService.response(
         res,
         {},
-        replacePlaceholders(i18n.t('otp_verify.' + status), {
+        // replacePlaceholders(i18n.t('otp_verify.' + status), {
+        replacePlaceholders(i18n.t('global.' + status), {
           OTP_EXPIRY_SECONDS:
             await this.settingsService.get('otp_expiry_seconds'),
         }),
@@ -125,7 +138,8 @@ export class OtpController {
     return this.responseService.response(
       res,
       responseData,
-      i18n.t('otp_verify.OTP_VERIFICATION_SUCCESS'),
+      // i18n.t('otp_verify.OTP_VERIFICATION_SUCCESS'),
+      i18n.t('global.OTP_VERIFICATION_SUCCESS'),
     );
   }
 

@@ -7,7 +7,8 @@ import { Types } from 'mongoose';
 import { LandmarkDto } from './dto/landmark.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { SettingsService } from '../settings/settings.service';
-// import { I18nService } from 'nestjs-i18n';
+import { GroupUsersService } from './group.users.service';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 // import { SettingsService } from '../settings/settings.service';
 
@@ -16,7 +17,9 @@ export class GroupsService {
   constructor(
     private readonly groupsRepository: GroupsRepository,
     // private readonly settingsRepository: SettingsRepository,
-    private readonly settingsService: SettingsService, // private readonly i18n: I18nService, // private readonly settingsService: SettingsService,
+    private readonly settingsService: SettingsService,
+    private readonly groupUsersService: GroupUsersService,
+    private readonly i18nService: I18nService, // private readonly settingsService: SettingsService,
   ) {}
 
   async create(
@@ -32,9 +35,11 @@ export class GroupsService {
     // console.log(groupNameCount);
     if (groupNameCount > 0)
       throw new HttpException(
-        'You cannot create multiple group with same name.',
+        this.i18nService.t('global.HTTP_EXCEPTION_MULTIPLE_GROUP_SAME_NAME', {
+          lang: I18nContext.current().lang,
+        }),
         HttpStatus.UNPROCESSABLE_ENTITY,
-      ); // TODO do translation of message
+      );
     const codeLength = await this.settingsService.get(
       'group_share_code_length',
       {
@@ -86,7 +91,12 @@ export class GroupsService {
     loggedInUserId = new Types.ObjectId(loggedInUserId);
     const group = await this.groupsRepository.findNonPopulatedById(groupId);
     if (!group) {
-      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        this.i18nService.t('global.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
+          lang: I18nContext.current().lang,
+        }),
+        HttpStatus.NOT_FOUND,
+      );
     }
     const isOwner = group.groupOwner.equals(loggedInUserId);
     const isAdmin = group.groupAdmins.includes(loggedInUserId);
@@ -98,23 +108,35 @@ export class GroupsService {
     // console.log('isMember');
     // console.log(isMember);
     if (accessOptions.isOwner && !isOwner) {
-      // console.log('HttpException owner');
       throw new HttpException(
-        'Only group owner can access!',
+        this.i18nService.t(
+          'global.HTTP_EXCEPTION_ONLY_GROUP_OWNER_CAN_ACCESS',
+          {
+            lang: I18nContext.current().lang,
+          },
+        ),
         HttpStatus.FORBIDDEN,
       );
     }
     if (accessOptions.isAdmin && !isAdmin && !isOwner) {
-      // console.log('HttpException admin');
       throw new HttpException(
-        'Only group admins can access!',
+        this.i18nService.t(
+          'global.HTTP_EXCEPTION_ONLY_GROUP_ADMINS_CAN_ACCESS',
+          {
+            lang: I18nContext.current().lang,
+          },
+        ),
         HttpStatus.FORBIDDEN,
       );
     }
     if (accessOptions.isMember && !isAdmin && !isOwner && !isMember) {
-      // console.log('HttpException members');
       throw new HttpException(
-        'Only group members can access!',
+        this.i18nService.t(
+          'global.HTTP_EXCEPTION_ONLY_GROUP_MEMBERS_CAN_ACCESS',
+          {
+            lang: I18nContext.current().lang,
+          },
+        ),
         HttpStatus.FORBIDDEN,
       );
     }
@@ -151,7 +173,12 @@ export class GroupsService {
     );
 
     if (existingLandmark) {
-      // throw new HttpException('Landmark already exists', HttpStatus.CONFLICT);
+      // throw new HttpException(
+      //   this.i18nService.t('global.HTTP_EXCEPTION_LANDMARK_ALREADY_EXISTS', {
+      //     lang: I18nContext.current().lang,
+      //   }),
+      //   HttpStatus.CONFLICT,
+      // );
       return group;
     }
 
@@ -245,6 +272,57 @@ export class GroupsService {
         options,
       );
     }
+  }
+
+  async joinGroupByCode(
+    groupUniqueCode: string,
+    loggedInUserId: Types.ObjectId,
+  ) {
+    // console.log('joinGroupByCode');
+    loggedInUserId = new Types.ObjectId(loggedInUserId);
+    const group = await this.groupsRepository.findOne({
+      code: groupUniqueCode,
+    });
+    if (!group) {
+      throw new HttpException(
+        this.i18nService.t('global.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
+          lang: I18nContext.current().lang,
+        }),
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    // console.log(group);
+    const updatedGroup = await this.groupsRepository.findOneAndUpdate(
+      { _id: group._id },
+      { $addToSet: { members: loggedInUserId } },
+      { new: true },
+    );
+    await this.assignGroupWithUser(group._id, loggedInUserId);
+    return updatedGroup;
+  }
+
+  async assignGroupWithUser(groupId: Types.ObjectId, userId: Types.ObjectId) {
+    // console.log('assignGroupWithUser');
+    // console.log(groupId);
+    // console.log(userId);
+    // groupId = new Types.ObjectId(groupId);
+    // userId = new mongoose.Types.ObjectId(userId);
+    // console.log(groupId);
+    // console.log(userId);
+    return await this.groupUsersService.createOrUpdate(
+      {
+        groupId,
+        userId,
+      },
+      {
+        groupId,
+        userId,
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    );
   }
 
   // async delete(id: Types.ObjectId): Promise<GroupDocument> {

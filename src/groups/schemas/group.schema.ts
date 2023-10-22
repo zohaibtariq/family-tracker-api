@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes, Types } from 'mongoose';
+import { FamilyRoles } from '../enums/family-roles';
 
 export type GroupDocument = Group & Document;
 
@@ -18,6 +19,9 @@ export class Group extends Document {
 
   @Prop({ required: true, type: SchemaTypes.ObjectId, ref: 'User' })
   groupOwner: Types.ObjectId; //createdBy
+
+  @Prop({ required: true, enum: FamilyRoles })
+  groupOwnerFamilyRole: FamilyRoles;
 
   @Prop({
     type: Object,

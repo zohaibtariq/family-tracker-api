@@ -1,10 +1,16 @@
 // import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { FamilyRoles } from '../enums/family-roles';
 
 export class CreateGroupDto {
   @IsString()
   @IsNotEmpty()
   readonly name: string;
+
+  @IsEnum(FamilyRoles)
+  @IsNotEmpty()
+  readonly groupOwnerFamilyRole: FamilyRoles;
+
   //
   // @IsString()
   // readonly code: string;

@@ -16,7 +16,6 @@ export class GroupAccessGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // TODO need to think this requiredGroupAccess how frontend will be aware of it so it cannot show such action item ui element like update group name to show for admin or members as it is only allowed for admin
     const requiredGroupAccess = this.reflector.get(
       'groupAccess',
       context.getHandler(),

@@ -35,7 +35,8 @@ export class RevokedAccessTokenBlacklistMiddleware implements NestMiddleware {
     const isBlacklisted = await this.redis.get(token);
 
     if (isBlacklisted) {
-      const message = this.i18n.t('auth.TOKEN_REVOKED');
+      // const message = this.i18n.t('auth.TOKEN_REVOKED');
+      const message = this.i18n.t('global.TOKEN_REVOKED');
       this.responseService.response(
         res,
         { message },

@@ -15,7 +15,7 @@ export class GenericExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'An Unknown Internal Server Error';
+    let message = 'An Unknown Server Error';
     console.log('GENERIC EXCEPTION');
     console.log(exception);
     console.log(exception.status);
@@ -27,6 +27,7 @@ export class GenericExceptionFilter implements ExceptionFilter {
         : '') ||
       exception?.response ||
       message;
+    if (status === 404 && !exception.response) message = '404 Not Found';
     this.responseService.response(response, {}, message, status);
   }
 }

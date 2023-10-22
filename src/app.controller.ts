@@ -19,10 +19,13 @@
 // import { AccessTokenGuard } from './otp/guards/accessToken.guard';
 
 // @UseGuards(AccessTokenGuard)
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
+  constructor(private appService: AppService) {}
+
   // @Post('upload')
   // @UseInterceptors(
   //   FileInterceptor('avatar', {
@@ -46,4 +49,9 @@ export class AppController {
   //   deleteAllFromDestExcludingOne(file.destination, file.filename); // IMPORTANT:: it is deleting all files excluding the recently uploaded one
   //   return file;
   // }
+
+  @Get()
+  getHello() {
+    return this.appService.getHello();
+  }
 }

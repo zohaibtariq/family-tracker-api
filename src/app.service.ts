@@ -6,6 +6,7 @@ export class AppService {
   constructor(private readonly i18n: I18nService) {}
 
   getHello(): string {
-    return this.i18n.t('test.HELLO', { lang: I18nContext.current().lang });
+    // return this.i18n.t('test.HELLO', { lang: I18nContext.current().lang });
+    return this.i18n.t('global.HELLO', { lang: I18nContext.current().lang });
   }
 }
