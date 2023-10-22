@@ -25,6 +25,18 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsString()
   avatar: Express.Multer.File;
 
+  @IsOptional()
+  @IsString()
+  deviceId: string;
+
+  @IsOptional()
+  @IsString()
+  currentLocationLatitude: number;
+
+  @IsOptional()
+  @IsString()
+  currentLocationLongitude: number;
+
   @Exclude()
   phoneNumber: string;
 

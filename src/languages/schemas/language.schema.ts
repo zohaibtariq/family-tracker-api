@@ -9,7 +9,7 @@ export type LanguageDocument = Language & Document;
 })
 export class Language extends Document {
   @Prop({ required: true, unique: true })
-  code: string; // Language code (e.g., "en" for English, "ar" for Arabic)
+  code: string; // Language code (e.g., "en-US" for English, "ar" for Arabic)
 
   @Prop({ required: true, enum: LanguageDirection })
   direction: LanguageDirection; // Language direction (RTL or LTR)

@@ -36,12 +36,23 @@ export class User {
   role: UserRole;
 
   @Prop({ default: UserStatus.UNVERIFIED })
-  status: UserStatus;
+  status: UserStatus; // TODO over user block make it 0 from sudo
 
-  // TODO add keys
-  // notificationStatus = 0, 1 -> only admin can toggle it when mark blocked must be set to zero
-  // appId = // deviceId -> need to add update support in user update api as well
-  // current location lat lon -> need to add update support in user update api as well
+  @Prop({ default: true }) // TODO over user block make it 0
+  notificationStatus: boolean;
+
+  @Prop({ default: '' })
+  deviceId: string;
+
+  @Prop({
+    type: Object,
+    latitude: Number,
+    longitude: Number,
+  })
+  currentLocation: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
@@ -57,7 +68,7 @@ UserSchema.methods.toJSON = function () {
 
 UserSchema.path('avatar').get(function (value) {
   if (!value)
-    return `${process.env.NODE_APP_URL}:${process.env.NODE_APP_PORT}/public/images/defaults/avatar.png`;
+    return `${process.env.NODE_APP_URL}:${process.env.NODE_APP_PORT}/public/images/avatar.png`;
   else
     return `${process.env.NODE_APP_URL}:${process.env.NODE_APP_PORT}/public/avatars/${this.id}/avatar/${value}`;
 });

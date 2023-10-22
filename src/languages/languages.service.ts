@@ -18,7 +18,7 @@ export class LanguagesService {
   async findAll(): Promise<LanguageDocument[]> {
     return await this.languagesRepository.find(
       { isActive: true },
-      { isActive: 0, __v: 0 },
+      { isActive: 0, __v: 0, name: 0, id: 0, _id: 0 },
     );
   }
 

@@ -39,4 +39,5 @@ SettingsSchema.methods.toJSON = function () {
   delete obj._id;
   return obj;
 };
+
 export { SettingsSchema };

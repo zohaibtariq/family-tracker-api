@@ -184,7 +184,14 @@ export const imageFileFilter = (req, file, cb) => {
   } else {
     cb(
       new HttpException(
-        'File type ' + file.mimetype + ' is not allowed.',
+        replacePlaceholders(
+          req.i18nService.t('global.ERROR_FILE_TYPE_NOT_ALLOWED', {
+            lang: req.i18nLang,
+          }),
+          {
+            FILE_MIME_TYPE: file.mimetype,
+          },
+        ),
         HttpStatus.UNPROCESSABLE_ENTITY,
       ),
       false,

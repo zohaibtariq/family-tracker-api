@@ -13,6 +13,8 @@ import { GenericExceptionFilter } from './exceptions/generic-exception.filter';
 import { ResponseService } from './response/response.service';
 import * as passport from 'passport';
 import { ValidationPipe } from '@nestjs/common';
+// import { I18nMiddleware } from './i18n.middleware';
+import { I18nMiddleware } from 'nestjs-i18n';
 // import { ExpressAdapter } from '@nestjs/platform-express';
 // import * as express from 'express';
 // import * as bodyParser from 'body-parser';
@@ -33,6 +35,7 @@ async function bootstrap() {
       abortOnError: false,
     },
   );
+  app.use(I18nMiddleware);
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalFilters(new GenericExceptionFilter(new ResponseService()));
   await app.get(DatabaseSeeder).seedDatabase();

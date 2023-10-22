@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SettingsRepository } from './settings.repository';
-import { I18nService } from 'nestjs-i18n';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 import { replacePlaceholders } from '../utils/helpers';
 
 @Injectable()
@@ -39,11 +39,15 @@ export class SettingsService {
     return settings[key];
   }
 
-  async getScreenTranslations(screenSlug: string) {
+  // async getScreenTranslations(screenSlug: string) {
+  async getScreenTranslations() {
     // TODO should be cached with redis
     // console.log('getScreenTranslations START ' + screenSlug);
     // return this.i18n.t(screenSlug);
-    let translations = await this.i18n.t(screenSlug);
+    // let translations = await this.i18n.t(screenSlug);
+    let translations = await this.i18n.t('global', {
+      lang: I18nContext.current().lang,
+    });
     if (typeof translations === 'string') translations = {};
     // console.log(translations);
     const settings = await this.findAll();

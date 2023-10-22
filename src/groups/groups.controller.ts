@@ -25,6 +25,7 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupAccessGuard } from './guards/group.access.guard';
 import { GroupAccess } from './decoraters/group.access.decorator';
 import { SettingsService } from '../settings/settings.service';
+import { JoinGroupCodeDto } from './dto/join-group-code.dto';
 
 @UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('groups')
@@ -43,7 +44,6 @@ export class GroupsController {
     @Body() createGroupDto: CreateGroupDto,
   ) {
     // TODO need to discuss share link, deeplink mechanism via firebase
-    // TODO need to add family relation see designs
     // console.log('req.user.id');
     // console.log(req.user.id);
     const newGroup = await this.groupsService.create(
@@ -52,30 +52,25 @@ export class GroupsController {
     );
     // console.log(newGroup);
     const { id, code } = newGroup;
-    await this.assignGroupWithUser(id, req.user.id);
+    await this.groupsService.assignGroupWithUser(id, req.user.id);
     return this.responseService.response(res, { code }, '', HttpStatus.CREATED);
   }
 
-  async assignGroupWithUser(groupId: Types.ObjectId, userId: Types.ObjectId) {
-    // console.log(groupId);
-    // console.log(userId);
-    // groupId = new Types.ObjectId(groupId);
-    // userId = new mongoose.Types.ObjectId(userId);
-    // console.log(groupId);
-    // console.log(userId);
-    return await this.groupUsersService.createOrUpdate(
-      {
-        groupId,
-        userId,
-      },
-      {
-        groupId,
-        userId,
-      },
-      {
-        new: true,
-        upsert: true,
-      },
+  @Post('join')
+  async joinGroupByCode(
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+    @Body() joinGroupCodeDto: JoinGroupCodeDto,
+  ) {
+    const joinedGroup = await this.groupsService.joinGroupByCode(
+      joinGroupCodeDto.code,
+      req.user.id,
+    );
+    return this.responseService.response(
+      res,
+      joinedGroup,
+      '',
+      HttpStatus.CREATED,
     );
   }
 
@@ -151,7 +146,6 @@ export class GroupsController {
     });
   }
 
-  // TODO need to write a logic to join loggedin user with share code as well
   // TODO > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but latter the group joining logic will be updated via share URL so it's just for dev testing to test the flow
   @Post(':groupId/:userId')
   async joinGroup(
@@ -171,7 +165,10 @@ export class GroupsController {
       { $addToSet: { members: userId } },
       { new: true, upsert: true },
     );
-    const joined = await this.assignGroupWithUser(groupId, userId);
+    const joined = await this.groupsService.assignGroupWithUser(
+      groupId,
+      userId,
+    );
     return this.responseService.response(res, joined, '', HttpStatus.CREATED);
   }
 
@@ -238,10 +235,7 @@ export class GroupsController {
 
   // TODO add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to ASK (owner, admin, member)
 
-  // TODO mark group member an admin functionality
+  // TODO mark group member an admin functionality and remove admin
 
   // TODO ASK what special feature does group owner, admin or member has ?
-
-  // TODO need to build a mechanism of how app will show hide action item for specific user over a group we need to make list of all action items and there access should be define as
-  //  well and there access must be pass dynamically as a metadata over endpoint, NEED TO VERIFY THIS I HAVE DONE THIS PART
 }
