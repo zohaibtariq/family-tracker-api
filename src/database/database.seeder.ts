@@ -18,7 +18,7 @@ export class DatabaseSeeder {
     'NODE_APP_URL',
   )}:${this.configService.get<string>('NODE_APP_PORT')}/public/images/`;
 
-  // TODO V1 ASK APP TEAM convert all images to webp ask APP TEAM if they don't have any issues, or APP display them properly
+  // TODO V1 ASK APP TEAM convert all images to webp ask APP TEAM if they don't have any issues, or APP display them properly, will do once design is final
   globalImages = {
     white_logo: `${this.baseImageUrl}white_logo.jpg`,
     golden_logo: `${this.baseImageUrl}golden_logo.jpg`,
@@ -305,6 +305,13 @@ export class DatabaseSeeder {
       //   group: 'onboarding_common',
       // },
       {
+        key: 'group_creation_limit_of_user',
+        value: 3,
+        dataType: 'number',
+        module: 'group',
+        group: 'group',
+      },
+      {
         key: 'group_share_code_length',
         value: 6,
         dataType: 'json',
@@ -405,30 +412,6 @@ export class DatabaseSeeder {
         module: 'contact',
         group: 'contact',
       },
-      // {
-      //   // TODO currently not in use so if not in use think and remove it
-      //   key: 'default_avatar',
-      //   value: this.globalImages.avatar,
-      //   dataType: 'string',
-      //   module: 'user',
-      //   group: 'user',
-      // },
-      // {
-      //   // TODO currently not in use so if not in use think and remove it
-      //   key: 'default_avatar_male',
-      //   value: this.globalImages.avatar_male,
-      //   dataType: 'string',
-      //   module: 'user',
-      //   group: 'user',
-      // },
-      // {
-      //   // TODO currently not in use so if not in use think and remove it
-      //   key: 'default_avatar_female',
-      //   value: this.globalImages.avatar_female,
-      //   dataType: 'string',
-      //   module: 'user',
-      //   group: 'user',
-      // },
       {
         key: 'otp_expiry_seconds',
         value: 15,
@@ -450,7 +433,7 @@ export class DatabaseSeeder {
         module: 'otp',
         group: 'otp',
       },
-      // { // TODO inform to app dev's
+      // { // TODO V1 ASK APP TEAM inform to app dev's
       //   key: 'map_init_center',
       //   value: { lat: 40.7128, lng: -74.006 }, // this will be user current lat long
       // },

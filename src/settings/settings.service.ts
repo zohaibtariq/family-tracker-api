@@ -2,17 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { SettingsRepository } from './settings.repository';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { replacePlaceholders } from '../utils/helpers';
+import { RedisService } from '../redis.service';
 
 @Injectable()
 export class SettingsService {
   constructor(
     private readonly settingsRepository: SettingsRepository,
     private readonly i18n: I18nService,
+    private readonly redisService: RedisService,
   ) {}
 
   async findAll(filter = {}) {
-    // TODO V1 - should be cached with redis and must write cache clear logic as well on any change made
-    return this.transformSettings(await this.settingsRepository.find(filter));
+    // console.log('inside CACHE_SETTINGS_ALL filter');
+    return this.redisService.remember(`CACHE_SETTINGS_ALL`, 3600, async () => {
+      // console.log('inside CACHE_SETTINGS_ALL');
+      // Simulate fetching user data from a database or another source
+      return this.transformSettings(await this.settingsRepository.find(filter));
+    });
+    // return this.transformSettings(cachedSettings);
   }
 
   async findByGroup(module: string, group: string) {
@@ -41,28 +48,35 @@ export class SettingsService {
 
   // async getScreenTranslations(screenSlug: string) {
   async getScreenTranslations() {
-    // TODO V1 - should be cached with redis and must write cache clear logic as well on any change made
     // console.log('getScreenTranslations START ' + screenSlug);
     // return this.i18n.t(screenSlug);
     // let translations = await this.i18n.t(screenSlug);
-    let translations = await this.i18n.t('global', {
-      lang: I18nContext.current().lang,
-    });
-    if (typeof translations === 'string') translations = {};
-    // console.log(translations);
-    const settings = await this.findAll();
-    // console.log(translations);
-    // console.log(settings);
-    Object.keys(settings).forEach((key) => {
-      settings[key.toUpperCase()] = settings[key];
-      delete settings[key];
-    });
-    Object.keys(translations).forEach((key) => {
-      translations[key] = replacePlaceholders(translations[key], settings);
-    });
-    // console.log(translations);
-    // console.log('getScreenTranslations END ' + screenSlug);
-    return translations;
-    // return this.i18n.t(screenSlug, { lang: I18nContext.current().lang });
+    console.log('setting service getScreenTranslations');
+    return this.redisService.remember(
+      `CACHE_SETTINGS_SCREENS_TRANSLATIONS_ALL`,
+      3600,
+      async () => {
+        console.log('setting service getScreenTranslations inside cache');
+        let translations = await this.i18n.t('language', {
+          lang: I18nContext.current().lang,
+        });
+        if (typeof translations === 'string') translations = {};
+        // console.log(translations);
+        const settings = await this.findAll();
+        // console.log(translations);
+        // console.log(settings);
+        Object.keys(settings).forEach((key) => {
+          settings[key.toUpperCase()] = settings[key];
+          delete settings[key];
+        });
+        Object.keys(translations).forEach((key) => {
+          translations[key] = replacePlaceholders(translations[key], settings);
+        });
+        // console.log(translations);
+        // console.log('getScreenTranslations END ' + screenSlug);
+        return translations;
+        // return this.i18n.t(screenSlug, { lang: I18nContext.current().lang });
+      },
+    );
   }
 }

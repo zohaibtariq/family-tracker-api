@@ -25,8 +25,9 @@
   "GROUP_FAMILY_ROLE_FRIEND": "en-US: Friend",
   "HTTP_EXCEPTION_MULTIPLE_GROUP_SAME_NAME": "en-US: You cannot create multiple group with same name.",
   "HTTP_EXCEPTION_GROUP_NOT_FOUND": "en-US: Group not found",
-  "HTTP_EXCEPTION_ONLY_GROUP_OWNER_CAN_ACCESS": "Only group owner can access!",
-  "HTTP_EXCEPTION_ONLY_GROUP_ADMINS_CAN_ACCESS": "Only group admins can access!",
-  "HTTP_EXCEPTION_ONLY_GROUP_MEMBERS_CAN_ACCESS": "Only group members can access!",
-  "HTTP_EXCEPTION_LANDMARK_ALREADY_EXISTS": "Landmark already exists"
+  "HTTP_EXCEPTION_ONLY_GROUP_OWNER_CAN_ACCESS": "en-US: Only group owner can access!",
+  "HTTP_EXCEPTION_ONLY_GROUP_ADMINS_CAN_ACCESS": "en-US: Only group admins can access!",
+  "HTTP_EXCEPTION_ONLY_GROUP_MEMBERS_CAN_ACCESS": "en-US: Only group members can access!",
+  "HTTP_EXCEPTION_LANDMARK_ALREADY_EXISTS": "en-US: Landmark already exists",
+  "HTTP_EXCEPTION_USER_GROUP_COUNT_LIMIT": "en-US: You have {{GROUP_USERS_COUNT}} groups and only {{GROUP_CREATION_LIMIT_OF_USER}} groups can be allowed by a user."
 }

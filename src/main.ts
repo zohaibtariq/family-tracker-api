@@ -1,10 +1,10 @@
-// FIXME: Use FIXME for highlighting critical issues that need urgent fixing.
-// NOTE: Use NOTE to provide additional information or context.
-// HACK: Indicate code that is a workaround or quick-and-dirty solution.
-// REVIEW: Suggest that the code needs a review.
-// IMPROVE: Suggest improvements or optimizations.
-// TODO: Suggest improvements or optimizations.
-// IMPORTANT: Suggest improvements or optimizations.
+// FIXME
+// NOTE
+// HACK
+// REVIEW
+// IMPROVE
+// TODO
+// IMPORTANT
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';

@@ -19,7 +19,7 @@
 // import { AccessTokenGuard } from './otp/guards/accessToken.guard';
 
 // @UseGuards(AccessTokenGuard)
-import { Controller, Get } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -50,8 +50,8 @@ export class AppController {
   //   return file;
   // }
 
-  @Get()
-  getHello() {
-    return this.appService.getHello();
-  }
+  // @Get()
+  // getHello() {
+  //   return this.appService.getHello();
+  // }
 }

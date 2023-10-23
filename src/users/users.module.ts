@@ -11,6 +11,7 @@ import { ResponseModule } from '../response/response.module';
 import { SettingsService } from '../settings/settings.service';
 import { SettingsRepository } from '../settings/settings.repository';
 import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
+import { RedisService } from '../redis.service';
 
 // import { SettingsModule } from '../settings/settings.module';
 
@@ -33,6 +34,7 @@ import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
     },
     SettingsService,
     SettingsRepository,
+    RedisService,
   ],
   exports: [UsersService],
 })

@@ -55,7 +55,7 @@ export class ScreensController {
   //   @I18n() i18n: I18nContext,
   // ) {
   //   // const translations = i18n.t(slug);
-  //   const translations = i18n.t('global');
+  //   const translations = i18n.t('language');
   //   const settings = await this.settingsService.findAll();
   //   Object.keys(settings).forEach((key) => {
   //     settings[key.toUpperCase()] = settings[key];

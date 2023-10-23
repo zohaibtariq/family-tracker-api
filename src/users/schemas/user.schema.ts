@@ -21,6 +21,9 @@ export class User {
   emergencyNumber: string;
 
   @Prop({ default: '' })
+  emailAddress: string;
+
+  @Prop({ default: '' })
   firstName: string;
 
   @Prop({ default: '' })

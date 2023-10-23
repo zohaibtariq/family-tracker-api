@@ -22,11 +22,20 @@ export class GroupsService {
     private readonly i18nService: I18nService, // private readonly settingsService: SettingsService,
   ) {}
 
+  async countUserGroups(userId: Types.ObjectId) {
+    return this.groupsRepository.countDocuments({
+      $or: [
+        { groupOwner: userId },
+        { groupAdmins: userId },
+        { members: userId },
+      ],
+    });
+  }
+
   async create(
     createGroupDto: CreateGroupDto,
     loggedInUserId: Types.ObjectId,
   ): Promise<GroupDocument> {
-    // TODO V1 define how many groups can a user create in setting
     // TODO V1 group pop functionality with some timer from 1 to 6 hours and we will set end date or valid till date
     // TODO V1 BACKEND need to setup supervisor which will fire hourly and disable circle
     // TODO V1 Circle disable functionality
@@ -40,7 +49,7 @@ export class GroupsService {
     // console.log(groupNameCount);
     if (groupNameCount > 0)
       throw new HttpException(
-        this.i18nService.t('global.HTTP_EXCEPTION_MULTIPLE_GROUP_SAME_NAME', {
+        this.i18nService.t('language.HTTP_EXCEPTION_MULTIPLE_GROUP_SAME_NAME', {
           lang: I18nContext.current().lang,
         }),
         HttpStatus.UNPROCESSABLE_ENTITY,
@@ -97,7 +106,7 @@ export class GroupsService {
     const group = await this.groupsRepository.findNonPopulatedById(groupId);
     if (!group) {
       throw new HttpException(
-        this.i18nService.t('global.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
+        this.i18nService.t('language.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
           lang: I18nContext.current().lang,
         }),
         HttpStatus.NOT_FOUND,
@@ -115,7 +124,7 @@ export class GroupsService {
     if (accessOptions.isOwner && !isOwner) {
       throw new HttpException(
         this.i18nService.t(
-          'global.HTTP_EXCEPTION_ONLY_GROUP_OWNER_CAN_ACCESS',
+          'language.HTTP_EXCEPTION_ONLY_GROUP_OWNER_CAN_ACCESS',
           {
             lang: I18nContext.current().lang,
           },
@@ -126,7 +135,7 @@ export class GroupsService {
     if (accessOptions.isAdmin && !isAdmin && !isOwner) {
       throw new HttpException(
         this.i18nService.t(
-          'global.HTTP_EXCEPTION_ONLY_GROUP_ADMINS_CAN_ACCESS',
+          'language.HTTP_EXCEPTION_ONLY_GROUP_ADMINS_CAN_ACCESS',
           {
             lang: I18nContext.current().lang,
           },
@@ -137,7 +146,7 @@ export class GroupsService {
     if (accessOptions.isMember && !isAdmin && !isOwner && !isMember) {
       throw new HttpException(
         this.i18nService.t(
-          'global.HTTP_EXCEPTION_ONLY_GROUP_MEMBERS_CAN_ACCESS',
+          'language.HTTP_EXCEPTION_ONLY_GROUP_MEMBERS_CAN_ACCESS',
           {
             lang: I18nContext.current().lang,
           },
@@ -179,7 +188,7 @@ export class GroupsService {
 
     if (existingLandmark) {
       // throw new HttpException(
-      //   this.i18nService.t('global.HTTP_EXCEPTION_LANDMARK_ALREADY_EXISTS', {
+      //   this.i18nService.t('language.HTTP_EXCEPTION_LANDMARK_ALREADY_EXISTS', {
       //     lang: I18nContext.current().lang,
       //   }),
       //   HttpStatus.CONFLICT,
@@ -290,7 +299,7 @@ export class GroupsService {
     });
     if (!group) {
       throw new HttpException(
-        this.i18nService.t('global.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
+        this.i18nService.t('language.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
           lang: I18nContext.current().lang,
         }),
         HttpStatus.NOT_FOUND,

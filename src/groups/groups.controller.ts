@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Param,
   Patch,
@@ -26,6 +27,7 @@ import { GroupAccessGuard } from './guards/group.access.guard';
 import { GroupAccess } from './decoraters/group.access.decorator';
 import { SettingsService } from '../settings/settings.service';
 import { JoinGroupCodeDto } from './dto/join-group-code.dto';
+import { replacePlaceholders } from '../utils/helpers';
 
 @UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('groups')
@@ -43,9 +45,33 @@ export class GroupsController {
     @Res() res: Response,
     @Body() createGroupDto: CreateGroupDto,
   ) {
-    // TODO V1 ASK APP TEAM need to discuss share link, deeplink mechanism via firebase
-    // console.log('req.user.id');
-    // console.log(req.user.id);
+    const userGroupCount = await this.groupsService.countUserGroups(
+      req.user.id,
+    );
+    const userGroupCreationLimit: any = await this.settingsService.get(
+      'group_creation_limit_of_user',
+      {
+        module: 'group',
+        group: 'group',
+      },
+    );
+    if (userGroupCount >= userGroupCreationLimit)
+      throw new HttpException(
+        replacePlaceholders(
+          req.i18nService.t('language.HTTP_EXCEPTION_USER_GROUP_COUNT_LIMIT', {
+            lang: req.i18nLang,
+          }),
+          {
+            GROUP_USERS_COUNT: userGroupCount,
+            GROUP_CREATION_LIMIT_OF_USER: userGroupCreationLimit,
+          },
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    console.log('userGroupCreationLimit');
+    console.log(userGroupCreationLimit);
+    console.log('userGroupCount');
+    console.log(userGroupCount);
     const newGroup = await this.groupsService.create(
       createGroupDto,
       req.user.id,
@@ -146,32 +172,32 @@ export class GroupsController {
     });
   }
 
-  // TODO REMOVE only join by code is allowed > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but
+  // REMOVED only join by code is allowed > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but
   //  latter the group joining logic will be updated via share URL so it's just for dev testing to test the flow
-  @Post(':groupId/:userId')
-  async joinGroup(
-    @Req() req: RequestUserInterface,
-    @Res() res: Response,
-    @Param('groupId') groupId: Types.ObjectId,
-    @Param('userId') userId: Types.ObjectId,
-  ) {
-    // console.log(groupId);
-    // console.log(userId);
-    groupId = new Types.ObjectId(groupId);
-    userId = new Types.ObjectId(userId);
-    // console.log(groupId);
-    // console.log(userId);
-    await this.groupsService.createOrUpdate(
-      { _id: groupId },
-      { $addToSet: { members: userId } },
-      { new: true, upsert: true },
-    );
-    const joined = await this.groupsService.assignGroupWithUser(
-      groupId,
-      userId,
-    );
-    return this.responseService.response(res, joined, '', HttpStatus.CREATED);
-  }
+  // @Post(':groupId/:userId')
+  // async joinGroup(
+  //   @Req() req: RequestUserInterface,
+  //   @Res() res: Response,
+  //   @Param('groupId') groupId: Types.ObjectId,
+  //   @Param('userId') userId: Types.ObjectId,
+  // ) {
+  //   // console.log(groupId);
+  //   // console.log(userId);
+  //   groupId = new Types.ObjectId(groupId);
+  //   userId = new Types.ObjectId(userId);
+  //   // console.log(groupId);
+  //   // console.log(userId);
+  //   await this.groupsService.createOrUpdate(
+  //     { _id: groupId },
+  //     { $addToSet: { members: userId } },
+  //     { new: true, upsert: true },
+  //   );
+  //   const joined = await this.groupsService.assignGroupWithUser(
+  //     groupId,
+  //     userId,
+  //   );
+  //   return this.responseService.response(res, joined, '', HttpStatus.CREATED);
+  // }
 
   @Patch(':groupId/landmark/:landMarkId')
   @UseGuards(GroupAccessGuard)
@@ -240,8 +266,7 @@ export class GroupsController {
 
   // TODO V2 ASK what special feature does group owner, admin or member has ?
 
-  // TODO V1 add email address field in profile
-  // TODO V1 code auto copy over app
+  // TODO V1 ASK APP TEAM code auto copy over app
   // TODO V1 account delete 15 days limit
   // TODO V1 medication list
   // TODO V1 emergency content list
@@ -249,4 +274,5 @@ export class GroupsController {
   // TODO V1 landmark add label
   // TODO V1 ASK APP TEAM navigate me will take user to group owner always, and this is not visible to owner
   // TODO V1 ASK APP TEAM create bubble will only be visible to group owner
+  // TODO V1 ASK APP TEAM need to discuss share link, deeplink mechanism via firebase (bcz firebase will disable this link generation...)
 }

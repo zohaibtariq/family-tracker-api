@@ -14,6 +14,7 @@ import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../users/users.repository';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { ResponseService } from '../response/response.service';
+import { RedisService } from '../redis.service';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ResponseService } from '../response/response.service';
     UsersService,
     UsersRepository,
     ResponseService,
+    RedisService,
     // {
     //   provide: UsersRepository,
     //   useFactory: () => {
