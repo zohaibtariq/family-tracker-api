@@ -243,4 +243,10 @@ export class GroupsController {
   // TODO V1 add email address field in profile
   // TODO V1 code auto copy over app
   // TODO V1 account delete 15 days limit
+  // TODO V1 medication list
+  // TODO V1 emergency content list
+  // TODO V1 static content
+  // TODO V1 landmark add label
+  // TODO V1 ASK APP TEAM navigate me will take user to group owner always, and this is not visible to owner
+  // TODO V1 ASK APP TEAM create bubble will only be visible to group owner
 }
