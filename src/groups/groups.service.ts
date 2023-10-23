@@ -26,7 +26,12 @@ export class GroupsService {
     createGroupDto: CreateGroupDto,
     loggedInUserId: Types.ObjectId,
   ): Promise<GroupDocument> {
-    // TODO define how many groups can a user create in setting
+    // TODO V1 define how many groups can a user create in setting
+    // TODO V1 group pop functionality with some timer from 1 to 6 hours and we will set end date or valid till date
+    // TODO V1 BACKEND need to setup supervisor which will fire hourly and disable circle
+    // TODO V1 Circle disable functionality
+    // TODO V1 BACKEND need to add two settings in settings hours and in settings update time mechanism with displacement covered mechanism anyone can trigger update logic
+    // TODO V1 ASK APP TEAM, R&D over which type of MAP API is required to us we will discuss this after design
     const groupNameCount = await this.groupsRepository.countDocuments({
       groupOwner: loggedInUserId,
       name: createGroupDto.name,
@@ -185,7 +190,7 @@ export class GroupsService {
     const updatedGroup = await this.groupsRepository.findOneAndUpdate(
       { _id: new Types.ObjectId(groupId) },
       {
-        $addToSet: { landmarks: landmarkDto }, // TODO if we have a requirement in future that a landmark created by a member can only be updated or deleted by that same member or admin or super admin only so we have to add markedBy userId here to cater member access separation logic
+        $addToSet: { landmarks: landmarkDto }, // TODO V1 if we have a requirement in future that a landmark created by a member can only be updated or deleted by that same member or adminor super admin only so we have to add markedBy userId here to cater member access separation logic QUESTION ASKED Q IS : Landmark/Places can be created by group anygroupmember ? and can be deleted by any group member ? OR only that member OR owner can delete which actually creates it ?
       },
       { new: true },
     );
@@ -338,7 +343,7 @@ export class GroupsService {
   }
 
   async findGroupsForUser(userId: Types.ObjectId): Promise<GroupDocument[]> {
-    // TODO need to implement pagination here
+    // TODO V1 need to implement pagination here
     return await this.groupsRepository.find({
       isActive: true,
       $or: [

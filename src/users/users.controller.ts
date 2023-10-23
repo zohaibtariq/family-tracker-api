@@ -72,7 +72,7 @@ export class UsersController {
     @I18n() i18n: I18nContext,
   ) {
     if (file) {
-      // TODO: CONVERT ALL MESSAGES VIA LANG only those which will be visible to users, error messages not displayed over app can be converted or stay in english only
+      // TODO V1 CONVERT ALL MESSAGES VIA LANG only those which will be visible to users, error messages not displayed over app can be converted or stay in english only
       const fileMimeType = identifyImageMimeType(file.path);
       const isValid = VALID_IMAGE_MIME_TYPES.includes(fileMimeType);
       const isFileInLimit = file.size > MAX_FILE_SIZE_IN_BYTES;

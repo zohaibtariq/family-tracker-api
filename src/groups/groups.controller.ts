@@ -43,7 +43,7 @@ export class GroupsController {
     @Res() res: Response,
     @Body() createGroupDto: CreateGroupDto,
   ) {
-    // TODO need to discuss share link, deeplink mechanism via firebase
+    // TODO V1 ASK APP TEAM need to discuss share link, deeplink mechanism via firebase
     // console.log('req.user.id');
     // console.log(req.user.id);
     const newGroup = await this.groupsService.create(
@@ -76,10 +76,10 @@ export class GroupsController {
 
   @Get()
   async findAll(@Req() req: RequestUserInterface, @Res() res: Response) {
-    // TODO need to show count of users joined in a group
+    // TODO V2 need to show count of users joined in a group
     return this.responseService.response(
       res,
-      await this.groupsService.findGroupsForUser(req.user.id), // TODO might need transformer just to show members count, it can be done via length of members
+      await this.groupsService.findGroupsForUser(req.user.id), // TODO V1 IF REQUIRED - might need transformer just to show members count, it can be done via length of members
       '',
     );
   }
@@ -92,7 +92,7 @@ export class GroupsController {
   ) {
     // console.log('GET id');
     // console.log(id);
-    const group = await this.groupsService.findOne(groupId); // TODO write transformation logic here like with members highlight owner and admin with users members
+    const group = await this.groupsService.findOne(groupId); // TODO V1 IF REQUIRED - write transformation logic here like with members highlight owner and admin with users members
     return this.responseService.response(
       res,
       {
@@ -146,7 +146,8 @@ export class GroupsController {
     });
   }
 
-  // TODO > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but latter the group joining logic will be updated via share URL so it's just for dev testing to test the flow
+  // TODO REMOVE only join by code is allowed > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but
+  //  latter the group joining logic will be updated via share URL so it's just for dev testing to test the flow
   @Post(':groupId/:userId')
   async joinGroup(
     @Req() req: RequestUserInterface,
@@ -233,9 +234,13 @@ export class GroupsController {
     return this.groupsService.remove(groupId);
   }
 
-  // TODO add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to ASK (owner, admin, member)
+  // TODO V1 add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to ASK (owner, admin, member)
 
-  // TODO mark group member an admin functionality and remove admin
+  // TODO V2 mark group member an admin functionality and remove admin
 
-  // TODO ASK what special feature does group owner, admin or member has ?
+  // TODO V2 ASK what special feature does group owner, admin or member has ?
+
+  // TODO V1 add email address field in profile
+  // TODO V1 code auto copy over app
+  // TODO V1 account delete 15 days limit
 }

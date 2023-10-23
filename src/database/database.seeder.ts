@@ -18,7 +18,7 @@ export class DatabaseSeeder {
     'NODE_APP_URL',
   )}:${this.configService.get<string>('NODE_APP_PORT')}/public/images/`;
 
-  // TODO convert all images to webp ask APP TEAM if they don't have any issues, or APP display them properly
+  // TODO V1 ASK APP TEAM convert all images to webp ask APP TEAM if they don't have any issues, or APP display them properly
   globalImages = {
     white_logo: `${this.baseImageUrl}white_logo.jpg`,
     golden_logo: `${this.baseImageUrl}golden_logo.jpg`,

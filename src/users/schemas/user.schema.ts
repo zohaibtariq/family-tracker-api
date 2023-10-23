@@ -36,9 +36,9 @@ export class User {
   role: UserRole;
 
   @Prop({ default: UserStatus.UNVERIFIED })
-  status: UserStatus; // TODO over user block make it 0 from sudo
+  status: UserStatus; // TODO V1 over user block make it 0 from sudo
 
-  @Prop({ default: true }) // TODO over user block make it 0
+  @Prop({ default: true }) // TODO V1 over user block make it 0
   notificationStatus: boolean;
 
   @Prop({ default: '' })

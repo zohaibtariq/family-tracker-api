@@ -11,12 +11,12 @@ export class SettingsService {
   ) {}
 
   async findAll(filter = {}) {
-    // TODO should be cached with redis
+    // TODO V1 - should be cached with redis and must write cache clear logic as well on any change made
     return this.transformSettings(await this.settingsRepository.find(filter));
   }
 
   async findByGroup(module: string, group: string) {
-    // TODO should be cached with redis
+    // TODO V1 - should be cached with redis and must write cache clear logic as well on any change made
     return this.transformSettings(
       await this.settingsRepository.find({ module, group }),
     );
@@ -34,14 +34,14 @@ export class SettingsService {
   }
 
   async get(key: string = '', filters = {}) {
-    // TODO should be cached with redis
+    // TODO V1 - should be cached with redis and must write cache clear logic as well on any change made
     const settings = await this.findAll(filters);
     return settings[key];
   }
 
   // async getScreenTranslations(screenSlug: string) {
   async getScreenTranslations() {
-    // TODO should be cached with redis
+    // TODO V1 - should be cached with redis and must write cache clear logic as well on any change made
     // console.log('getScreenTranslations START ' + screenSlug);
     // return this.i18n.t(screenSlug);
     // let translations = await this.i18n.t(screenSlug);
