@@ -1,7 +1,0 @@
-{
-  "OTP_VERIFICATION_SUCCESS": "FR: OTP verification has been successful.",
-  "PHONE_NUMBER_NOT_FOUND": "FR: User not found.",
-  "OTP_EXPIRY_SEC_NOT_DEFINED": "FR: OTP expiry seconds not defined in settings.",
-  "OTP_ERROR_WRONG_OR_EXPIRED": "FR: OTP is incorrect or expired (entered after \"{{OTP_EXPIRY_SECONDS}}\" seconds).",
-  "OTP_VERIFIED": "FR: OTP has been verified."
-}

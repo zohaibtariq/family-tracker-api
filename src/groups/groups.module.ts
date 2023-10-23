@@ -15,6 +15,7 @@ import { Group, GroupSchema } from './schemas/group.schema';
 import { GroupUsersService } from './group.users.service';
 import { GroupUsersRepository } from './group.users.repository';
 import { GroupUsers, GroupUsersSchema } from './schemas/group.users.schema';
+import { RedisService } from '../redis.service';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { GroupUsers, GroupUsersSchema } from './schemas/group.users.schema';
     ResponseService,
     GroupUsersService,
     GroupUsersRepository,
+    RedisService,
   ],
 })
 export class GroupsModule implements NestModule {

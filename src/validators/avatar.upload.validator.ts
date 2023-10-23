@@ -30,8 +30,8 @@
 //
 //   // public buildErrorMessage(@I18n() i18n: I18nContext): string {
 //   public buildErrorMessage(): string {
-//     // console.log(this.i18n.t('auth.TOKEN_REVOKED'));
-//     // console.log(i18n.t('auth.TOKEN_REVOKED'));
+//     // console.log(this.i18n.t('language.TOKEN_REVOKED'));
+//     // console.log(i18n.t('language.TOKEN_REVOKED'));
 //     return `Upload not allowed. Upload only files of type: ${this._allowedMimeTypes.join(
 //       ', ',
 //     )} are allowed for upload`;

@@ -1,6 +1,6 @@
 import { CreateUserDto } from './create-user.dto';
 import { PartialType } from '@nestjs/mapped-types';
-import { IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { Exclude } from 'class-transformer';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
@@ -36,6 +36,11 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsString()
   currentLocationLongitude: number;
+
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  emailAddress: number;
 
   @Exclude()
   phoneNumber: string;

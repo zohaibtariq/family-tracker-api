@@ -185,7 +185,7 @@ export const imageFileFilter = (req, file, cb) => {
     cb(
       new HttpException(
         replacePlaceholders(
-          req.i18nService.t('global.ERROR_FILE_TYPE_NOT_ALLOWED', {
+          req.i18nService.t('language.ERROR_FILE_TYPE_NOT_ALLOWED', {
             lang: req.i18nLang,
           }),
           {

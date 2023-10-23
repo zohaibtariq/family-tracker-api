@@ -22,11 +22,25 @@ export class GroupsService {
     private readonly i18nService: I18nService, // private readonly settingsService: SettingsService,
   ) {}
 
+  async countUserGroups(userId: Types.ObjectId) {
+    return this.groupsRepository.countDocuments({
+      $or: [
+        { groupOwner: userId },
+        { groupAdmins: userId },
+        { members: userId },
+      ],
+    });
+  }
+
   async create(
     createGroupDto: CreateGroupDto,
     loggedInUserId: Types.ObjectId,
   ): Promise<GroupDocument> {
-    // TODO define how many groups can a user create in setting
+    // TODO V1 group pop functionality with some timer from 1 to 6 hours and we will set end date or valid till date
+    // TODO V1 BACKEND need to setup supervisor which will fire hourly and disable circle
+    // TODO V1 Circle disable functionality
+    // TODO V1 BACKEND need to add two settings in settings hours and in settings update time mechanism with displacement covered mechanism anyone can trigger update logic
+    // TODO V1 ASK APP TEAM, R&D over which type of MAP API is required to us we will discuss this after design
     const groupNameCount = await this.groupsRepository.countDocuments({
       groupOwner: loggedInUserId,
       name: createGroupDto.name,
@@ -35,7 +49,7 @@ export class GroupsService {
     // console.log(groupNameCount);
     if (groupNameCount > 0)
       throw new HttpException(
-        this.i18nService.t('global.HTTP_EXCEPTION_MULTIPLE_GROUP_SAME_NAME', {
+        this.i18nService.t('language.HTTP_EXCEPTION_MULTIPLE_GROUP_SAME_NAME', {
           lang: I18nContext.current().lang,
         }),
         HttpStatus.UNPROCESSABLE_ENTITY,
@@ -92,7 +106,7 @@ export class GroupsService {
     const group = await this.groupsRepository.findNonPopulatedById(groupId);
     if (!group) {
       throw new HttpException(
-        this.i18nService.t('global.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
+        this.i18nService.t('language.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
           lang: I18nContext.current().lang,
         }),
         HttpStatus.NOT_FOUND,
@@ -110,7 +124,7 @@ export class GroupsService {
     if (accessOptions.isOwner && !isOwner) {
       throw new HttpException(
         this.i18nService.t(
-          'global.HTTP_EXCEPTION_ONLY_GROUP_OWNER_CAN_ACCESS',
+          'language.HTTP_EXCEPTION_ONLY_GROUP_OWNER_CAN_ACCESS',
           {
             lang: I18nContext.current().lang,
           },
@@ -121,7 +135,7 @@ export class GroupsService {
     if (accessOptions.isAdmin && !isAdmin && !isOwner) {
       throw new HttpException(
         this.i18nService.t(
-          'global.HTTP_EXCEPTION_ONLY_GROUP_ADMINS_CAN_ACCESS',
+          'language.HTTP_EXCEPTION_ONLY_GROUP_ADMINS_CAN_ACCESS',
           {
             lang: I18nContext.current().lang,
           },
@@ -132,7 +146,7 @@ export class GroupsService {
     if (accessOptions.isMember && !isAdmin && !isOwner && !isMember) {
       throw new HttpException(
         this.i18nService.t(
-          'global.HTTP_EXCEPTION_ONLY_GROUP_MEMBERS_CAN_ACCESS',
+          'language.HTTP_EXCEPTION_ONLY_GROUP_MEMBERS_CAN_ACCESS',
           {
             lang: I18nContext.current().lang,
           },
@@ -174,7 +188,7 @@ export class GroupsService {
 
     if (existingLandmark) {
       // throw new HttpException(
-      //   this.i18nService.t('global.HTTP_EXCEPTION_LANDMARK_ALREADY_EXISTS', {
+      //   this.i18nService.t('language.HTTP_EXCEPTION_LANDMARK_ALREADY_EXISTS', {
       //     lang: I18nContext.current().lang,
       //   }),
       //   HttpStatus.CONFLICT,
@@ -185,7 +199,7 @@ export class GroupsService {
     const updatedGroup = await this.groupsRepository.findOneAndUpdate(
       { _id: new Types.ObjectId(groupId) },
       {
-        $addToSet: { landmarks: landmarkDto }, // TODO if we have a requirement in future that a landmark created by a member can only be updated or deleted by that same member or admin or super admin only so we have to add markedBy userId here to cater member access separation logic
+        $addToSet: { landmarks: landmarkDto }, // TODO V1 if we have a requirement in future that a landmark created by a member can only be updated or deleted by that same member or adminor super admin only so we have to add markedBy userId here to cater member access separation logic QUESTION ASKED Q IS : Landmark/Places can be created by group anygroupmember ? and can be deleted by any group member ? OR only that member OR owner can delete which actually creates it ?
       },
       { new: true },
     );
@@ -285,7 +299,7 @@ export class GroupsService {
     });
     if (!group) {
       throw new HttpException(
-        this.i18nService.t('global.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
+        this.i18nService.t('language.HTTP_EXCEPTION_GROUP_NOT_FOUND', {
           lang: I18nContext.current().lang,
         }),
         HttpStatus.NOT_FOUND,
@@ -338,7 +352,7 @@ export class GroupsService {
   }
 
   async findGroupsForUser(userId: Types.ObjectId): Promise<GroupDocument[]> {
-    // TODO need to implement pagination here
+    // TODO V1 need to implement pagination here
     return await this.groupsRepository.find({
       isActive: true,
       $or: [

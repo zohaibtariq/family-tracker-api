@@ -11,6 +11,7 @@ import { Country, CountrySchema } from '../countries/schemas/country.schema';
 import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
 import { Language, LanguageSchema } from '../languages/schemas/language.schema';
 import { Screen, ScreenSchema } from '../screens/schemas/screen.schema';
+import { RedisService } from '../redis.service';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { Screen, ScreenSchema } from '../screens/schemas/screen.schema';
     SettingsRepository,
     LanguagesRepository,
     ScreensRepository,
+    RedisService,
   ],
   exports: [],
 })

@@ -27,7 +27,8 @@ import {
   replacePlaceholders,
   VALID_IMAGE_MIME_TYPES,
 } from '../utils/helpers';
-import { I18n, I18nContext, I18nService } from 'nestjs-i18n';
+import { I18n, I18nContext } from 'nestjs-i18n';
+// import { I18nService } from 'nestjs-i18n';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
 import { Response } from 'express';
@@ -40,8 +41,7 @@ import { ResponseService } from '../response/response.service';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly responseService: ResponseService,
-    private readonly i18nService: I18nService,
+    private readonly responseService: ResponseService, // private readonly i18nService: I18nService,
   ) {}
 
   @Get()
@@ -72,19 +72,21 @@ export class UsersController {
     @I18n() i18n: I18nContext,
   ) {
     if (file) {
-      // TODO: CONVERT ALL MESSAGES VIA LANG only those which will be visible to users, error messages not displayed over app can be converted or stay in english only
       const fileMimeType = identifyImageMimeType(file.path);
       const isValid = VALID_IMAGE_MIME_TYPES.includes(fileMimeType);
       const isFileInLimit = file.size > MAX_FILE_SIZE_IN_BYTES;
       let errorMsg = '';
       if (isFileInLimit) {
-        errorMsg = replacePlaceholders(i18n.t('global.ERROR_FILE_SIZE_LARGE'), {
-          FILE_SIZE_MB: bytesToMB(file.size),
-          MAX_FILE_SIZE_IN_MB: bytesToMB(MAX_FILE_SIZE_IN_BYTES),
-        });
+        errorMsg = replacePlaceholders(
+          i18n.t('language.ERROR_FILE_SIZE_LARGE'),
+          {
+            FILE_SIZE_MB: bytesToMB(file.size),
+            MAX_FILE_SIZE_IN_MB: bytesToMB(MAX_FILE_SIZE_IN_BYTES),
+          },
+        );
       } else if (!isValid) {
         errorMsg = replacePlaceholders(
-          i18n.t('global.ERROR_FILE_TYPE_NOT_ALLOWED'),
+          i18n.t('language.ERROR_FILE_TYPE_NOT_ALLOWED'),
           {
             FILE_MIME_TYPE: fileMimeType,
           },
@@ -122,6 +124,8 @@ export class UsersController {
       );
       delete updateUserObj?.currentLocationLongitude;
     }
+    console.log('updateUserObj');
+    console.log(updateUserObj);
     const updatedUser = await this.usersService.update(userId, updateUserObj, {
       new: true,
     });

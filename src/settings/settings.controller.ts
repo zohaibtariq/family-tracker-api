@@ -26,22 +26,22 @@ export class SettingsController {
     const translations = await this.settingsService.getScreenTranslations();
     const group_family_roles = {};
     group_family_roles[FamilyRoles.MOTHER] = i18n.t(
-      'global.GROUP_FAMILY_ROLE_MOTHER',
+      'language.GROUP_FAMILY_ROLE_MOTHER',
     );
     group_family_roles[FamilyRoles.FATHER] = i18n.t(
-      'global.GROUP_FAMILY_ROLE_FATHER',
+      'language.GROUP_FAMILY_ROLE_FATHER',
     );
     group_family_roles[FamilyRoles.GRAND_FATHER] = i18n.t(
-      'global.GROUP_FAMILY_ROLE_GRAND_FATHER',
+      'language.GROUP_FAMILY_ROLE_GRAND_FATHER',
     );
     group_family_roles[FamilyRoles.GRAND_MOTHER] = i18n.t(
-      'global.GROUP_FAMILY_ROLE_GRAND_MOTHER',
+      'language.GROUP_FAMILY_ROLE_GRAND_MOTHER',
     );
     group_family_roles[FamilyRoles.SIBLING] = i18n.t(
-      'global.GROUP_FAMILY_ROLE_SIBLING',
+      'language.GROUP_FAMILY_ROLE_SIBLING',
     );
     group_family_roles[FamilyRoles.FRIEND] = i18n.t(
-      'global.GROUP_FAMILY_ROLE_FRIEND',
+      'language.GROUP_FAMILY_ROLE_FRIEND',
     );
     return this.responseService.response(res, {
       ...allStoredSettings,
