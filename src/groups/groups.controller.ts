@@ -189,10 +189,10 @@ export class GroupsController {
       new Date(),
       updateCircleDto.circleValidTillHours,
     );
-    console.log('updateCircleDto');
-    console.log(updateCircleDto);
-    console.log('circleValidTill');
-    console.log(updateCircleDto.circleValidTill);
+    // console.log('updateCircleDto');
+    // console.log(updateCircleDto);
+    // console.log('circleValidTill');
+    // console.log(updateCircleDto.circleValidTill);
     return this.groupsService.updateCircle(
       req.user.id,
       groupId,

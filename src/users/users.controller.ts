@@ -155,7 +155,7 @@ export class UsersController {
       updatedUser?.currentLocation?.longitude
     ) {
       const userCurrentLocation = updatedUser.currentLocation;
-      console.log('groups found of  a user...');
+      // console.log('groups found of  a user...');
       const userGroups = await this.groupsService.find(
         {
           circleValidTill: { $gt: new Date() },
@@ -170,7 +170,7 @@ export class UsersController {
       );
       if (userGroups) {
         userGroups.forEach((userGroup) => {
-          console.log(userGroup);
+          // console.log(userGroup);
           if (
             userGroup.circleCenter.longitude &&
             userGroup.circleCenter.latitude &&
