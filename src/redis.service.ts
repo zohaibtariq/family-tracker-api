@@ -35,4 +35,18 @@ export class RedisService {
     await this.set(key, JSON.stringify(freshData), expiresIn);
     return freshData;
   }
+
+  async clearAllCacheKeys(): Promise<void> {
+    const keys = await this.redisClient.keys('*');
+    if (keys.length > 0) {
+      await this.redisClient.del(...keys);
+    }
+  }
+
+  async clearCacheKeysWithPrefix(prefix: string): Promise<void> {
+    const keys = await this.redisClient.keys(`${prefix}*`);
+    if (keys.length > 0) {
+      await this.redisClient.del(...keys);
+    }
+  }
 }

@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Patch,
+  Post,
   Req,
   Res,
   UploadedFile,
@@ -33,6 +34,8 @@ import * as fs from 'fs';
 import { Types } from 'mongoose';
 import { Response } from 'express';
 import { ResponseService } from '../response/response.service';
+import { UpdateUserLocationDto } from './dto/update-user-location.dto';
+import { GroupsService } from '../groups/groups.service';
 
 // import { FileContentInterceptor } from '../utils/FileContentInterceptor';
 
@@ -41,6 +44,7 @@ import { ResponseService } from '../response/response.service';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
+    private readonly groupsService: GroupsService,
     private readonly responseService: ResponseService, // private readonly i18nService: I18nService,
   ) {}
 
@@ -107,29 +111,149 @@ export class UsersController {
         updateUserDto.emergencyCountryCode + updateUserDto.emergencyNumber;
     if (updateUserDto?.emergencyCountryCode)
       delete updateUserDto.emergencyCountryCode; // NOTE: because we don't want to persist country code of emergency number
-    const loggedInUser = await this.usersService.findById(req.user.id);
-    const updateUserObj: any = {
-      ...updateUserDto,
-      currentLocation: loggedInUser.currentLocation,
-    };
-    if (updateUserObj?.currentLocationLatitude) {
-      updateUserObj.currentLocation['latitude'] = parseFloat(
-        updateUserObj?.currentLocationLatitude,
-      );
-      delete updateUserObj?.currentLocationLatitude;
-    }
-    if (updateUserObj?.currentLocationLongitude) {
-      updateUserObj.currentLocation['longitude'] = parseFloat(
-        updateUserObj?.currentLocationLongitude,
-      );
-      delete updateUserObj?.currentLocationLongitude;
-    }
-    console.log('updateUserObj');
-    console.log(updateUserObj);
-    const updatedUser = await this.usersService.update(userId, updateUserObj, {
+    // const loggedInUser = await this.usersService.findById(req.user.id);
+    // const updateUserObj: any = {
+    //   ...updateUserDto,
+    //   currentLocation: loggedInUser.currentLocation,
+    // };
+    // if (updateUserObj?.currentLocationLatitude) {
+    //   updateUserObj.currentLocation['latitude'] = parseFloat(
+    //     updateUserObj?.currentLocationLatitude,
+    //   );
+    //   delete updateUserObj?.currentLocationLatitude;
+    // }
+    // if (updateUserObj?.currentLocationLongitude) {
+    //   updateUserObj.currentLocation['longitude'] = parseFloat(
+    //     updateUserObj?.currentLocationLongitude,
+    //   );
+    //   delete updateUserObj?.currentLocationLongitude;
+    // }
+    // console.log('updateUserObj');
+    // console.log(updateUserObj);
+    const updatedUser = await this.usersService.update(userId, updateUserDto, {
       new: true,
     });
     return this.responseService.response(res, updatedUser);
+  }
+
+  @Post('location')
+  async updateUserLocation(
+    @Body() updateUserLocationDto: UpdateUserLocationDto,
+    @Req() req: RequestUserInterface,
+    @Res() res: Response,
+  ) {
+    const userId: Types.ObjectId = req.user.id;
+    const updatedUser = await this.usersService.update(
+      userId,
+      updateUserLocationDto,
+      {
+        new: true,
+      },
+    );
+    if (
+      updatedUser?.currentLocation?.latitude &&
+      updatedUser?.currentLocation?.longitude
+    ) {
+      const userCurrentLocation = updatedUser.currentLocation;
+      console.log('groups found of  a user...');
+      const userGroups = await this.groupsService.find(
+        {
+          circleValidTill: { $gt: new Date() },
+          isActive: true,
+          $or: [
+            { groupOwner: userId },
+            { groupAdmins: userId },
+            { members: userId },
+          ],
+        },
+        {},
+      );
+      if (userGroups) {
+        userGroups.forEach((userGroup) => {
+          console.log(userGroup);
+          if (
+            userGroup.circleCenter.longitude &&
+            userGroup.circleCenter.latitude &&
+            userGroup.circleRadius
+          ) {
+            const circleCenter = userGroup.circleCenter;
+            const circleRadius = userGroup.circleRadius;
+            const distance = this.haversine(
+              userCurrentLocation.latitude,
+              userCurrentLocation.longitude,
+              circleCenter.latitude,
+              circleCenter.longitude,
+            );
+            console.log('circleRadius: ' + circleRadius);
+            console.log('distance: ' + distance);
+            if (distance > circleRadius) {
+              console.log('You are outside the circle boundary!');
+              // TODO V1 need to trigger notification required clarification from ABDULLAH whom to notify and how how
+            } else {
+              console.log('You are inside the circle boundary.');
+            }
+          }
+        });
+      } else {
+        console.log('groups not found of  a user...');
+      }
+    } else {
+      console.log('user location is not found...');
+    }
+    return this.responseService.response(res, updatedUser);
+  }
+
+  // getUserLocation() {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(this.showUserPosition);
+  //   } else {
+  //     alert('Geolocation is not supported by your browser.');
+  //   }
+  // }
+  //
+  // showUserPosition(position) {
+  //   const userLocation = {
+  //     lat: position.coords.latitude,
+  //     lng: position.coords.longitude,
+  //   };
+  //   // Check if the user's location is outside the circle boundary
+  //   this.checkLocation(userLocation);
+  // }
+  //
+  // checkLocation(userLocation) {
+  //   const circleCenter = { lat: 1, lng: 2 }; // circle.getCenter(); // Get the circle's center
+  //   const circleRadius = 2; // circle.getRadius(); // Get the circle's radius in meters
+  //
+  //   // Use the Haversine formula to calculate the distance between two lat/lng points
+  //   const distance = this.haversine(
+  //     userLocation.lat,
+  //     userLocation.lng,
+  //     circleCenter.lat,
+  //     circleCenter.lng,
+  //   );
+  //
+  //   if (distance > circleRadius) {
+  //     // The user is outside the circle boundary
+  //     alert('You are outside the circle boundary!');
+  //   } else {
+  //     // The user is inside the circle boundary
+  //     alert('You are inside the circle boundary.');
+  //   }
+  // }
+
+  haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance * 1000; // Distance in meters
   }
 
   // @Get('user-admin-superadmin')

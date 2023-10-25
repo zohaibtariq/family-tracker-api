@@ -12,6 +12,15 @@ import { SettingsService } from '../settings/settings.service';
 import { SettingsRepository } from '../settings/settings.repository';
 import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
 import { RedisService } from '../redis.service';
+import { GroupsService } from '../groups/groups.service';
+import { GroupsRepository } from '../groups/groups.repository';
+import { Group, GroupSchema } from '../groups/schemas/group.schema';
+import { GroupUsersService } from '../groups/group.users.service';
+import { GroupUsersRepository } from '../groups/group.users.repository';
+import {
+  GroupUsers,
+  GroupUsersSchema,
+} from '../groups/schemas/group.users.schema';
 
 // import { SettingsModule } from '../settings/settings.module';
 
@@ -20,6 +29,8 @@ import { RedisService } from '../redis.service';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Settings.name, schema: SettingsSchema },
+      { name: Group.name, schema: GroupSchema },
+      { name: GroupUsers.name, schema: GroupUsersSchema },
     ]),
     ResponseModule,
     // SettingsModule,
@@ -35,6 +46,10 @@ import { RedisService } from '../redis.service';
     SettingsService,
     SettingsRepository,
     RedisService,
+    GroupsService,
+    GroupsRepository,
+    GroupUsersService,
+    GroupUsersRepository,
   ],
   exports: [UsersService],
 })

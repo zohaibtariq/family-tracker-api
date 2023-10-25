@@ -23,13 +23,12 @@ import { AccessTokenGuard } from './guards/accessToken.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { UserRole } from '../users/enums/user.enum';
 import { ValidUserGuard } from './guards/valid.user.guard';
-import { InjectRedis } from '@liaoliaots/nestjs-redis';
-import Redis from 'ioredis';
 import { ConfigService } from '@nestjs/config';
 import { UserStatus } from '../users/enums/users.status.enum';
 import { ScreensService } from '../screens/screens.service';
 import { ScreenSlug } from '../screens/enums/screens.slugs.enum';
 import { RequestUserInterface } from '../users/interfaces/request-user-interface';
+import { RedisService } from '../redis.service';
 
 @Controller('otp')
 export class OtpController {
@@ -40,7 +39,7 @@ export class OtpController {
     private readonly responseService: ResponseService,
     private readonly configService: ConfigService,
     private readonly screensService: ScreensService,
-    @InjectRedis() private readonly redis: Redis, // or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
+    private readonly redisService: RedisService, // @InjectRedis() private readonly redis: Redis, // or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
   ) {}
 
   @Post('send')
@@ -79,7 +78,11 @@ export class OtpController {
       },
     );
     const userId = user._id;
+    // console.log('userId');
+    // console.log(userId);
     const otpCounts = await this.otpService.countOtp(userId);
+    // console.log('otpCounts');
+    // console.log(otpCounts);
     const settings: any = await this.settingsService.findAll();
     if (otpCounts < settings.max_retry_limit) {
       const createdResponse = await this.otpService.create(userId);
@@ -151,12 +154,19 @@ export class OtpController {
       req.headers as { authorization?: string }
     )?.authorization?.replace('Bearer ', '');
     if (token) {
-      await this.redis.set(
+      await this.redisService.set(
         token,
         'revoked',
-        'EX',
-        this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN_SEC'),
+        parseInt(
+          this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN_SEC'),
+        ),
       ); // Blacklist token for TIME expiry of access token as defined in .env
+      // await this.redis.set(
+      //   token,
+      //   'revoked',
+      //   'EX',
+      //   this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN_SEC'),
+      // ); // Blacklist token for TIME expiry of access token as defined in .env
     }
     await this.otpService.logout(req.user.id);
     return this.responseService.response(res, {}, '', HttpStatus.NO_CONTENT);

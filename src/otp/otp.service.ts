@@ -15,9 +15,9 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { UserDocument } from '../users/schemas/user.schema';
-import { InjectRedis } from '@liaoliaots/nestjs-redis';
-import Redis from 'ioredis';
-import { I18nService } from 'nestjs-i18n';
+// import { InjectRedis } from '@liaoliaots/nestjs-redis';
+// import Redis from 'ioredis';
+// import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class OtpService {
@@ -26,9 +26,7 @@ export class OtpService {
     private readonly settingsService: SettingsService,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-    private readonly i18n: I18nService,
-    @InjectRedis() private readonly redis: Redis, // NOTE or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
+    private readonly configService: ConfigService, // private readonly i18n: I18nService, // @InjectRedis() private readonly redis: Redis, // NOTE or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
   ) {}
 
   async create(userId: mongoose.Types.ObjectId) {
@@ -45,6 +43,8 @@ export class OtpService {
   }
 
   async countOtp(userId: mongoose.Types.ObjectId) {
+    // console.log('reset_otp_retry_hours');
+    // console.log(await this.settingsService.get('reset_otp_retry_hours'));
     const retryAfterUnixTime = subtractMinutesToUnixTimestamp(
       new Date().getTime(),
       (await this.settingsService.get('reset_otp_retry_hours')) * 60,
@@ -54,7 +54,9 @@ export class OtpService {
       verified: false,
       expiry: { $gt: retryAfterUnixTime },
     };
-    return this.otpRepository.countDocuments(countFilter);
+    // console.log('countFilter');
+    // console.log(countFilter);
+    return await this.otpRepository.countDocuments(countFilter);
   }
 
   async getVerifiedOTPUserId(verifyOtpDto: VerifyOtpDto) {

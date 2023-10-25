@@ -13,6 +13,7 @@ import { ValidUserGuard } from './guards/valid.user.guard';
 import { RevokedAccessTokenBlacklistMiddleware } from './middlewares/revoked-access-token-blacklist.middleware';
 import { ScreensModule } from '../screens/screens.module';
 import { ResponseService } from '../response/response.service';
+import { RedisService } from '../redis.service';
 // import { RedisService } from 'nestjs-redis';
 
 // import { RedisCacheModule } from '../redis/redis.module';
@@ -44,6 +45,7 @@ import { ResponseService } from '../response/response.service';
     ValidUserGuard,
     // RedisService,
     ResponseService,
+    RedisService,
   ],
 })
 export class OtpModule implements NestModule {

@@ -28,6 +28,9 @@ import { GroupAccess } from './decoraters/group.access.decorator';
 import { SettingsService } from '../settings/settings.service';
 import { JoinGroupCodeDto } from './dto/join-group-code.dto';
 import { replacePlaceholders } from '../utils/helpers';
+import { RedisService } from '../redis.service';
+import { UpdateCircleDto } from './dto/update-circle.dto';
+import { addHours } from 'date-fns';
 
 @UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('groups')
@@ -37,6 +40,7 @@ export class GroupsController {
     private readonly groupUsersService: GroupUsersService,
     private readonly settingsService: SettingsService,
     private readonly responseService: ResponseService,
+    private readonly redisService: RedisService,
   ) {}
 
   @Post()
@@ -68,10 +72,10 @@ export class GroupsController {
         ),
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
-    console.log('userGroupCreationLimit');
-    console.log(userGroupCreationLimit);
-    console.log('userGroupCount');
-    console.log(userGroupCount);
+    // console.log('userGroupCreationLimit');
+    // console.log(userGroupCreationLimit);
+    // console.log('userGroupCount');
+    // console.log(userGroupCount);
     const newGroup = await this.groupsService.create(
       createGroupDto,
       req.user.id,
@@ -159,17 +163,44 @@ export class GroupsController {
     );
   }
 
+  // @Patch(':groupId/circle')
+  // @UseGuards(GroupAccessGuard)
+  // @GroupAccess('group_circle_create_update')
+  // async updateCircle(
+  //   @Req() req: RequestUserInterface,
+  //   @Param('groupId') groupId: Types.ObjectId,
+  //   @Body() updateGroupDto: UpdateGroupDto,
+  // ) {
+  //   return this.groupsService.update(req.user.id, groupId, updateGroupDto, {
+  //     new: true,
+  //   });
+  // }
+
   @Patch(':groupId/circle')
   @UseGuards(GroupAccessGuard)
   @GroupAccess('group_circle_create_update')
   async updateCircle(
     @Req() req: RequestUserInterface,
     @Param('groupId') groupId: Types.ObjectId,
-    @Body() updateGroupDto: UpdateGroupDto,
+    @Body() updateCircleDto: UpdateCircleDto,
   ) {
-    return this.groupsService.update(req.user.id, groupId, updateGroupDto, {
-      new: true,
-    });
+    updateCircleDto.circleUpdatedAt = new Date();
+    updateCircleDto.circleValidTill = addHours(
+      new Date(),
+      updateCircleDto.circleValidTillHours,
+    );
+    console.log('updateCircleDto');
+    console.log(updateCircleDto);
+    console.log('circleValidTill');
+    console.log(updateCircleDto.circleValidTill);
+    return this.groupsService.updateCircle(
+      req.user.id,
+      groupId,
+      updateCircleDto,
+      {
+        new: true,
+      },
+    );
   }
 
   // REMOVED only join by code is allowed > here a user want to join the group we can do it by two ways 1) join/groupId 2) groupId/userId for now for ease of use we are doing 2 but
@@ -258,6 +289,16 @@ export class GroupsController {
     @Param('groupId') groupId: Types.ObjectId,
   ) {
     return this.groupsService.remove(groupId);
+  }
+
+  @Post('redis/cache/clear')
+  async redisCacheClear(@Req() req, @Res() res: Response) {
+    await this.redisService.clearCacheKeysWithPrefix('CACHE_GROUPS');
+    return this.responseService.response(
+      res,
+      {},
+      'All redis keys are cleared of groups.',
+    );
   }
 
   // TODO V1 add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to ASK (owner, admin, member)

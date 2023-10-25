@@ -1,9 +1,10 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { ResponseService } from '../response/response.service';
 import { Response } from 'express';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { FamilyRoles } from '../groups/enums/family-roles';
+import { RedisService } from '../redis.service';
 
 // @UseGuards(AccessTokenGuard)
 @Controller('settings')
@@ -11,6 +12,7 @@ export class SettingsController {
   constructor(
     private readonly settingsService: SettingsService,
     private readonly responseService: ResponseService,
+    private readonly redisService: RedisService,
   ) {}
 
   // @Post()
@@ -48,5 +50,15 @@ export class SettingsController {
       translations,
       group_family_roles,
     });
+  }
+
+  @Post('redis/cache/clear')
+  async redisCacheClear(@Req() req, @Res() res: Response) {
+    await this.redisService.clearCacheKeysWithPrefix('CACHE_SETTINGS');
+    return this.responseService.response(
+      res,
+      {},
+      'All redis keys are cleared of settings.',
+    );
   }
 }

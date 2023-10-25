@@ -9,6 +9,7 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { SettingsService } from '../settings/settings.service';
 import { GroupUsersService } from './group.users.service';
 import { I18nContext, I18nService } from 'nestjs-i18n';
+import { UpdateCircleDto } from './dto/update-circle.dto';
 
 // import { SettingsService } from '../settings/settings.service';
 
@@ -246,6 +247,10 @@ export class GroupsService {
   //   return this.groupsRepository.findById(id, projection);
   // }
 
+  async find(find: any = {}, project: any = {}) {
+    return await this.groupsRepository.find(find, project);
+  }
+
   async findAll(loggedInUserId: Types.ObjectId): Promise<GroupDocument[]> {
     // NOTE fetch loggedInUser created groups
     return await this.groupsRepository.find(
@@ -286,6 +291,21 @@ export class GroupsService {
         options,
       );
     }
+  }
+
+  async updateCircle(
+    userId: Types.ObjectId,
+    groupId: Types.ObjectId,
+    updateCircleDto: UpdateCircleDto,
+    options = {},
+  ): Promise<GroupDocument> {
+    return this.groupsRepository.findByIdAndUpdate(
+      groupId,
+      {
+        $set: updateCircleDto,
+      },
+      options,
+    );
   }
 
   async joinGroupByCode(
