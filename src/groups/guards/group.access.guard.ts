@@ -27,7 +27,7 @@ export class GroupAccessGuard implements CanActivate {
     // console.log('settingsGroupAccess');
     // console.log(settingsGroupAccess);
     if (!requiredGroupAccess || !settingsGroupAccess) {
-      // NOTE access must be strictly pass from meta data and defined in db as well
+      // NOTE access must be strictly pass from metadata and defined in db as well
       return false; // access allowed for all
     }
     const request = context.switchToHttp().getRequest();

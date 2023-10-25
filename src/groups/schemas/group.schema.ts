@@ -36,6 +36,15 @@ export class Group extends Document {
   @Prop({ default: 0 })
   circleRadius: number;
 
+  @Prop({ type: Date, default: Date.now })
+  circleUpdatedAt: Date;
+
+  @Prop({ type: Date, default: Date.now })
+  circleValidTill: Date;
+
+  @Prop({ default: 0 })
+  circleValidTillHours: number;
+
   @Prop({ default: '' })
   deepLink: string;
 

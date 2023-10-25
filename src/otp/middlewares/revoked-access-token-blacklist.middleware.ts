@@ -3,15 +3,14 @@ import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { Response } from 'express';
 import { ResponseService } from '../../response/response.service';
 import { I18nService } from 'nestjs-i18n';
-import Redis from 'ioredis';
-import { InjectRedis } from '@liaoliaots/nestjs-redis';
+import { RedisService } from '../../redis.service';
 
 @Injectable()
 export class RevokedAccessTokenBlacklistMiddleware implements NestMiddleware {
   constructor(
     private readonly responseService: ResponseService,
     private readonly i18n: I18nService,
-    @InjectRedis() private readonly redis: Redis, // or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
+    private readonly redisService: RedisService, // @InjectRedis() private readonly redis: Redis, // or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
   ) {}
 
   async use(
@@ -32,7 +31,8 @@ export class RevokedAccessTokenBlacklistMiddleware implements NestMiddleware {
       return;
     }
 
-    const isBlacklisted = await this.redis.get(token);
+    // const isBlacklisted = await this.redis.get(token);
+    const isBlacklisted = await this.redisService.get(token);
 
     if (isBlacklisted) {
       // const message = this.i18n.t('language.TOKEN_REVOKED');

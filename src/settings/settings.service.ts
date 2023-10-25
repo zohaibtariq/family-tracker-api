@@ -23,7 +23,6 @@ export class SettingsService {
   }
 
   async findByGroup(module: string, group: string) {
-    // TODO V1 - should be cached with redis and must write cache clear logic as well on any change made
     return this.transformSettings(
       await this.settingsRepository.find({ module, group }),
     );
@@ -40,10 +39,18 @@ export class SettingsService {
     // });
   }
 
-  async get(key: string = '', filters = {}) {
-    // TODO V1 - should be cached with redis and must write cache clear logic as well on any change made
-    const settings = await this.findAll(filters);
-    return settings[key];
+  async get(key: string = '', filters: any = {}) {
+    // console.log('setting service get cache');
+    let CacheKey = 'CACHE_SETTINGS_';
+    if (key != '') CacheKey += key + '_';
+    if (filters?.group) CacheKey += 'GROUP_' + filters?.group;
+    if (filters?.module) CacheKey += 'MODULE_' + filters?.module;
+    // console.log('CacheKey: ' + CacheKey);
+    return await this.redisService.remember(CacheKey, 3600, async () => {
+      // console.log('setting service get cache inside');
+      const settings = await this.findAll(filters);
+      return settings[key];
+    });
   }
 
   // async getScreenTranslations(screenSlug: string) {
@@ -51,12 +58,12 @@ export class SettingsService {
     // console.log('getScreenTranslations START ' + screenSlug);
     // return this.i18n.t(screenSlug);
     // let translations = await this.i18n.t(screenSlug);
-    console.log('setting service getScreenTranslations');
-    return this.redisService.remember(
+    // console.log('setting service getScreenTranslations');
+    return await this.redisService.remember(
       `CACHE_SETTINGS_SCREENS_TRANSLATIONS_ALL`,
       3600,
       async () => {
-        console.log('setting service getScreenTranslations inside cache');
+        // console.log('setting service getScreenTranslations inside cache');
         let translations = await this.i18n.t('language', {
           lang: I18nContext.current().lang,
         });

@@ -29,13 +29,13 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsString()
   deviceId: string;
 
-  @IsOptional()
-  @IsString()
-  currentLocationLatitude: number;
+  // @IsOptional()
+  // @IsString()
+  // currentLocationLatitude: number;
 
-  @IsOptional()
-  @IsString()
-  currentLocationLongitude: number;
+  // @IsOptional()
+  // @IsString()
+  // currentLocationLongitude: number;
 
   @IsOptional()
   @IsString()
