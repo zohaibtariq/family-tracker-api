@@ -149,6 +149,7 @@ export class GroupsController {
     @Param('groupId') groupId: Types.ObjectId,
     @Body() landmarkDto: LandmarkDto,
   ) {
+    // TODO V1 landmark add label, any group member can add place including all admins owner while only owner admins and member (that created that place) can be able to edit delete that created place, need some limit per group of places
     // console.log(groupId);
     // console.log(landmarkDto);
     return this.responseService.response(
@@ -301,7 +302,7 @@ export class GroupsController {
     );
   }
 
-  // TODO V1 add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to ASK (owner, admin, member)
+  // TODO V1 add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to owner and the user who is outside the defined boundary
 
   // TODO V2 mark group member an admin functionality and remove admin
 
@@ -312,8 +313,7 @@ export class GroupsController {
   // TODO V1 medication list
   // TODO V1 emergency content list
   // TODO V1 static content
-  // TODO V1 landmark add label
-  // TODO V1 ASK APP TEAM navigate me will take user to group owner always, and this is not visible to owner
+  // TODO V1 ASK APP TEAM navigate me will take user to group owner always, and this is not visible to owner create an api which on passing any user id will return its current lat long value which will help in draw path plus add validation that logged in user and that user both must be part of that group so we might need to take user id and group id in param
   // TODO V1 ASK APP TEAM create bubble will only be visible to group owner
   // TODO V1 ASK APP TEAM need to discuss share link, deeplink mechanism via firebase (bcz firebase will disable this link generation...)
 }
