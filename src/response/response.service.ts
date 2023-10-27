@@ -5,10 +5,11 @@ import { Response } from 'express';
 export class ResponseService {
   response(
     res: Response,
-    data: any = {},
+    data: any = {} || [],
     message: string = '',
     statusCode: number = HttpStatus.OK,
   ) {
+    // TODO ASK APP TEAM is it possible if my response data has some time [] and {} ???
     return res.status(statusCode).json({
       status: this.getStatus(statusCode),
       data,

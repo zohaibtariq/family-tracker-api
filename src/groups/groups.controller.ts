@@ -315,5 +315,5 @@ export class GroupsController {
   // TODO V1 static content
   // TODO V1 ASK APP TEAM navigate me will take user to group owner always, and this is not visible to owner create an api which on passing any user id will return its current lat long value which will help in draw path plus add validation that logged in user and that user both must be part of that group so we might need to take user id and group id in param
   // TODO V1 ASK APP TEAM create bubble will only be visible to group owner
-  // TODO V1 ASK APP TEAM need to discuss share link, deeplink mechanism via firebase (bcz firebase will disable this link generation...)
+  // TODO V1 ASK APP TEAM need to discuss share link, deeplink mechanism via firebase (bcz firebase will disable this link generation...) R&D
 }
