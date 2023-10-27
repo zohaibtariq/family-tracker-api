@@ -52,6 +52,12 @@ export class SettingsController {
     });
   }
 
+  @Get('translations')
+  async getTranslations(@Req() req, @Res() res: Response) {
+    const translations = await this.settingsService.getScreensTranslations();
+    return this.responseService.response(res, translations);
+  }
+
   @Post('redis/cache/clear')
   async redisCacheClear(@Req() req, @Res() res: Response) {
     await this.redisService.clearCacheKeysWithPrefix('CACHE_SETTINGS');

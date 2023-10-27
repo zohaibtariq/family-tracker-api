@@ -60,7 +60,9 @@ export class SettingsService {
     // let translations = await this.i18n.t(screenSlug);
     // console.log('setting service getScreenTranslations');
     return await this.redisService.remember(
-      `CACHE_SETTINGS_SCREENS_TRANSLATIONS_ALL`,
+      `CACHE_SETTINGS_SCREENS_TRANSLATIONS_ALL_LANG_${
+        I18nContext.current().lang
+      }`,
       3600,
       async () => {
         // console.log('setting service getScreenTranslations inside cache');
@@ -85,5 +87,43 @@ export class SettingsService {
         // return this.i18n.t(screenSlug, { lang: I18nContext.current().lang });
       },
     );
+  }
+
+  async getScreensTranslations() {
+    const settings = await this.redisService.remember(
+      `CACHE_SETTINGS_ALL_SETTINGS`,
+      3600,
+      async () => {
+        return await this.findAll();
+      },
+    );
+    const languages = await this.redisService.remember(
+      `CACHE_SETTINGS_LANGUAGES`,
+      3600,
+      async () => {
+        return await this.get('languages', {
+          module: 'languages',
+          group: 'languages',
+        });
+      },
+    );
+    // const response = [];
+    const response = {};
+    for (const language of languages) {
+      let translations = await this.i18n.t('language', {
+        lang: language.code,
+      });
+      if (typeof translations === 'string') translations = {};
+      Object.keys(settings).forEach((key) => {
+        settings[key.toUpperCase()] = settings[key];
+        delete settings[key];
+      });
+      Object.keys(translations).forEach((key) => {
+        translations[key] = replacePlaceholders(translations[key], settings);
+      });
+      // response.push({ [language.code]: translations });
+      response[language.code] = translations;
+    }
+    return response;
   }
 }

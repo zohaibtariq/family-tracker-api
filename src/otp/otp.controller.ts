@@ -26,9 +26,10 @@ import { ValidUserGuard } from './guards/valid.user.guard';
 import { ConfigService } from '@nestjs/config';
 import { UserStatus } from '../users/enums/users.status.enum';
 import { ScreensService } from '../screens/screens.service';
-import { ScreenSlug } from '../screens/enums/screens.slugs.enum';
+// import { ScreenSlug } from '../screens/enums/screens.slugs.enum';
 import { RequestUserInterface } from '../users/interfaces/request-user-interface';
 import { RedisService } from '../redis.service';
+import { GroupsService } from '../groups/groups.service';
 
 @Controller('otp')
 export class OtpController {
@@ -39,6 +40,7 @@ export class OtpController {
     private readonly responseService: ResponseService,
     private readonly configService: ConfigService,
     private readonly screensService: ScreensService,
+    private readonly groupsService: GroupsService,
     private readonly redisService: RedisService, // @InjectRedis() private readonly redis: Redis, // or // @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis
   ) {}
 
@@ -134,10 +136,24 @@ export class OtpController {
     await this.otpService.updateRefreshToken(userId, tokens.refreshToken);
     let responseData: any = tokens;
     if (process.env.NODE_ENV !== 'production')
-      responseData = { ...tokens, userId };
-    responseData.next_screen = ScreenSlug.HOME;
-    responseData.previous_screen = ScreenSlug.OTP_SEND;
-    responseData.current_screen = ScreenSlug.OTP_VERIFY;
+      responseData = {
+        ...tokens,
+        userId,
+        userGroupsCount: await this.groupsService.countUserGroups(userId),
+        user: {
+          id: userId,
+          phoneNumber: user.phoneNumber,
+          avatar: user.avatar,
+          emailAddress: user.emailAddress,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          emergencyNumber: user.emergencyNumber,
+          currentLocation: user.currentLocation,
+        },
+      };
+    // responseData.next_screen = ScreenSlug.HOME;
+    // responseData.previous_screen = ScreenSlug.OTP_SEND;
+    // responseData.current_screen = ScreenSlug.OTP_VERIFY;
     return this.responseService.response(
       res,
       responseData,

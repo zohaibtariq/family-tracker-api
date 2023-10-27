@@ -14,6 +14,15 @@ import { RevokedAccessTokenBlacklistMiddleware } from './middlewares/revoked-acc
 import { ScreensModule } from '../screens/screens.module';
 import { ResponseService } from '../response/response.service';
 import { RedisService } from '../redis.service';
+import { GroupsService } from '../groups/groups.service';
+import { GroupsRepository } from '../groups/groups.repository';
+import { GroupUsersService } from '../groups/group.users.service';
+import { GroupUsersRepository } from '../groups/group.users.repository';
+import { Group, GroupSchema } from '../groups/schemas/group.schema';
+import {
+  GroupUsers,
+  GroupUsersSchema,
+} from '../groups/schemas/group.users.schema';
 // import { RedisService } from 'nestjs-redis';
 
 // import { RedisCacheModule } from '../redis/redis.module';
@@ -25,6 +34,14 @@ import { RedisService } from '../redis.service';
       {
         name: Otp.name,
         schema: OtpSchema,
+      },
+      {
+        name: Group.name,
+        schema: GroupSchema,
+      },
+      {
+        name: GroupUsers.name,
+        schema: GroupUsersSchema,
       },
     ]),
     UsersModule,
@@ -46,6 +63,10 @@ import { RedisService } from '../redis.service';
     // RedisService,
     ResponseService,
     RedisService,
+    GroupsService,
+    GroupsRepository,
+    GroupUsersService,
+    GroupUsersRepository,
   ],
 })
 export class OtpModule implements NestModule {
