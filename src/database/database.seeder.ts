@@ -306,8 +306,15 @@ export class DatabaseSeeder {
       // },
       {
         key: 'group_creation_limit_of_user',
-        value: 3,
+        value: 30,
         dataType: 'number',
+        module: 'group',
+        group: 'group',
+      },
+      {
+        key: 'group_share_message',
+        value: 'This is a group share message, S Admin can control it.',
+        dataType: 'string',
         module: 'group',
         group: 'group',
       },

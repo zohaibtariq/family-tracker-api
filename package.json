@@ -30,7 +30,10 @@
     "@nestjs/mongoose": "^10.0.1",
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.2.7",
+    "@nestjs/platform-socket.io": "^10.2.7",
     "@nestjs/serve-static": "^4.0.0",
+    "@nestjs/websockets": "^10.2.7",
+    "@socket.io/redis-adapter": "^8.2.1",
     "@types/passport": "^1.0.13",
     "argon2": "^0.31.1",
     "class-transformer": "^0.5.1",
@@ -47,7 +50,8 @@
     "passport-local": "^1.0.0",
     "redis": "^4.6.10",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.7.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

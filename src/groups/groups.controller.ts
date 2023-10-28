@@ -26,7 +26,6 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupAccessGuard } from './guards/group.access.guard';
 import { GroupAccess } from './decoraters/group.access.decorator';
 import { SettingsService } from '../settings/settings.service';
-import { JoinGroupCodeDto } from './dto/join-group-code.dto';
 import { replacePlaceholders } from '../utils/helpers';
 import { RedisService } from '../redis.service';
 import { UpdateCircleDto } from './dto/update-circle.dto';
@@ -59,6 +58,8 @@ export class GroupsController {
         group: 'group',
       },
     );
+    // console.log('userGroupCreationLimit');
+    // console.log(userGroupCreationLimit);
     if (userGroupCount >= userGroupCreationLimit)
       throw new HttpException(
         replacePlaceholders(
@@ -81,19 +82,40 @@ export class GroupsController {
       req.user.id,
     );
     // console.log(newGroup);
-    const { id, code } = newGroup;
-    await this.groupsService.assignGroupWithUser(id, req.user.id);
-    return this.responseService.response(res, { code }, '', HttpStatus.CREATED);
+    await this.groupsService.assignGroupWithUser(newGroup.id, req.user.id);
+    const groupShareMsg: any = await this.settingsService.get(
+      'group_share_message',
+      {
+        module: 'group',
+        group: 'group',
+      },
+    );
+    return this.responseService.response(
+      res,
+      this.groupsService.transformGroup(
+        newGroup,
+        this.groupsService.excludeGroupKeys(),
+        {
+          groupShareMsg,
+        },
+      ),
+      '',
+      HttpStatus.CREATED,
+    );
   }
 
-  @Post('join')
+  @Get('join/:code')
   async joinGroupByCode(
     @Req() req: RequestUserInterface,
     @Res() res: Response,
-    @Body() joinGroupCodeDto: JoinGroupCodeDto,
+    // @Body() joinGroupCodeDto: JoinGroupCodeDto,
+    @Param('code') code: string,
   ) {
+    // console.log('joinGroupByCode');
+    // console.log(code);
     const joinedGroup = await this.groupsService.joinGroupByCode(
-      joinGroupCodeDto.code,
+      // joinGroupCodeDto.code,
+      code,
       req.user.id,
     );
     return this.responseService.response(
@@ -107,10 +129,36 @@ export class GroupsController {
   @Get()
   async findAll(@Req() req: RequestUserInterface, @Res() res: Response) {
     // TODO V2 need to show count of users joined in a group
+    const groupShareMsg: any = await this.settingsService.get(
+      'group_share_message',
+      {
+        module: 'group',
+        group: 'group',
+      },
+    );
+
     return this.responseService.response(
       res,
-      await this.groupsService.findGroupsForUser(req.user.id), // TODO V1 IF REQUIRED - might need transformer just to show members count, it can be done via length of members
+      this.groupsService.transformGroups(
+        await this.groupsService.findGroupsForUser(req.user.id),
+        this.groupsService.excludeGroupKeys(['groupOwnerFamilyRole', 'share']),
+        { groupShareMsg },
+      ),
       '',
+    );
+  }
+
+  @Get('share-:shortUrl')
+  async receiveShortUrl(
+    // @Req() req: RequestUserInterface,
+    @Res() res: Response,
+    @Param('shortUrl') shortUrl: string,
+  ) {
+    // console.log('receiveShortUrl');
+    // console.log(shortUrl);
+    return this.responseService.response(
+      res,
+      await this.groupsService.getOriginalUrl(shortUrl),
     );
   }
 
@@ -120,6 +168,9 @@ export class GroupsController {
     @Res() res: Response,
     @Param('id') groupId: Types.ObjectId,
   ) {
+    // console.log('groups findOne id');
+    // console.log(groupId);
+    // TODO only see group detail if owner admin member
     // console.log('GET id');
     // console.log(id);
     const group = await this.groupsService.findOne(groupId); // TODO V1 IF REQUIRED - write transformation logic here like with members highlight owner and admin with users members
@@ -294,12 +345,8 @@ export class GroupsController {
 
   @Post('redis/cache/clear')
   async redisCacheClear(@Req() req, @Res() res: Response) {
-    await this.redisService.clearCacheKeysWithPrefix('CACHE_GROUPS');
-    return this.responseService.response(
-      res,
-      {},
-      'All redis keys are cleared of groups.',
-    );
+    await this.redisService.clearCacheKeysWithPrefix('CACHE_SETTINGS_'); //TODO need to fix cache keys prefix must be proper like settings groups and when clear cache request happen make sure to clear all dependant cache as well like groups with settings
+    return this.responseService.response(res, {}, 'All redis keys are cleared');
   }
 
   // TODO V1 add an endpoint which will check if user current lat long is outside the given circle boundary of a given group's circle or only userid with current lat long must be hit with some defined displacement which will be get from setting and api must check in how many group as owner admin or member this user is attached and if outside boundary will push notification to owner and the user who is outside the defined boundary

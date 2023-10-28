@@ -13,14 +13,16 @@ import { SettingsRepository } from '../settings/settings.repository';
 import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
 import { RedisService } from '../redis.service';
 import { GroupsService } from '../groups/groups.service';
-import { GroupsRepository } from '../groups/groups.repository';
+import { GroupsRepository } from '../groups/repositories/groups.repository';
 import { Group, GroupSchema } from '../groups/schemas/group.schema';
 import { GroupUsersService } from '../groups/group.users.service';
-import { GroupUsersRepository } from '../groups/group.users.repository';
+import { GroupUsersRepository } from '../groups/repositories/group.users.repository';
 import {
   GroupUsers,
   GroupUsersSchema,
 } from '../groups/schemas/group.users.schema';
+import { UrlsRepository } from '../groups/repositories/urls.repository';
+import { Url, UrlSchema } from '../groups/schemas/url.schema';
 
 // import { SettingsModule } from '../settings/settings.module';
 
@@ -31,6 +33,7 @@ import {
       { name: Settings.name, schema: SettingsSchema },
       { name: Group.name, schema: GroupSchema },
       { name: GroupUsers.name, schema: GroupUsersSchema },
+      { name: Url.name, schema: UrlSchema },
     ]),
     ResponseModule,
     // SettingsModule,
@@ -50,6 +53,7 @@ import {
     GroupsRepository,
     GroupUsersService,
     GroupUsersRepository,
+    UrlsRepository,
   ],
   exports: [UsersService],
 })

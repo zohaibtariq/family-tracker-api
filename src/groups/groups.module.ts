@@ -10,12 +10,14 @@ import { UsersRepository } from '../users/users.repository';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { RevokedAccessTokenBlacklistMiddleware } from '../otp/middlewares/revoked-access-token-blacklist.middleware';
 import { ResponseService } from '../response/response.service';
-import { GroupsRepository } from './groups.repository';
+import { GroupsRepository } from './repositories/groups.repository';
 import { Group, GroupSchema } from './schemas/group.schema';
 import { GroupUsersService } from './group.users.service';
-import { GroupUsersRepository } from './group.users.repository';
+import { GroupUsersRepository } from './repositories/group.users.repository';
 import { GroupUsers, GroupUsersSchema } from './schemas/group.users.schema';
 import { RedisService } from '../redis.service';
+import { Url, UrlSchema } from './schemas/url.schema';
+import { UrlsRepository } from './repositories/urls.repository';
 
 @Module({
   imports: [
@@ -36,6 +38,10 @@ import { RedisService } from '../redis.service';
         name: GroupUsers.name,
         schema: GroupUsersSchema,
       },
+      {
+        name: Url.name,
+        schema: UrlSchema,
+      },
     ]),
   ],
   controllers: [GroupsController],
@@ -50,6 +56,7 @@ import { RedisService } from '../redis.service';
     GroupUsersService,
     GroupUsersRepository,
     RedisService,
+    UrlsRepository,
   ],
 })
 export class GroupsModule implements NestModule {

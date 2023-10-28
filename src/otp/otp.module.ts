@@ -15,14 +15,16 @@ import { ScreensModule } from '../screens/screens.module';
 import { ResponseService } from '../response/response.service';
 import { RedisService } from '../redis.service';
 import { GroupsService } from '../groups/groups.service';
-import { GroupsRepository } from '../groups/groups.repository';
+import { GroupsRepository } from '../groups/repositories/groups.repository';
 import { GroupUsersService } from '../groups/group.users.service';
-import { GroupUsersRepository } from '../groups/group.users.repository';
+import { GroupUsersRepository } from '../groups/repositories/group.users.repository';
 import { Group, GroupSchema } from '../groups/schemas/group.schema';
 import {
   GroupUsers,
   GroupUsersSchema,
 } from '../groups/schemas/group.users.schema';
+import { Url, UrlSchema } from '../groups/schemas/url.schema';
+import { UrlsRepository } from '../groups/repositories/urls.repository'; // import { RedisService } from 'nestjs-redis';
 // import { RedisService } from 'nestjs-redis';
 
 // import { RedisCacheModule } from '../redis/redis.module';
@@ -42,6 +44,10 @@ import {
       {
         name: GroupUsers.name,
         schema: GroupUsersSchema,
+      },
+      {
+        name: Url.name,
+        schema: UrlSchema,
       },
     ]),
     UsersModule,
@@ -67,6 +73,7 @@ import {
     GroupsRepository,
     GroupUsersService,
     GroupUsersRepository,
+    UrlsRepository,
   ],
 })
 export class OtpModule implements NestModule {

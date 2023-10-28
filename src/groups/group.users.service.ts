@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GroupUsersRepository } from './group.users.repository';
+import { GroupUsersRepository } from './repositories/group.users.repository';
 
 @Injectable()
 export class GroupUsersService {
