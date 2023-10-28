@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes, Types } from 'mongoose';
 import { FamilyRoles } from '../enums/family-roles';
+import * as process from 'process';
 
 export type GroupDocument = Group & Document;
 
@@ -48,9 +49,6 @@ export class Group extends Document {
   @Prop({ default: '' })
   deepLink: string;
 
-  @Prop({ default: '' })
-  shareUrl: string;
-
   @Prop({ default: true })
   isActive: boolean;
 
@@ -70,6 +68,9 @@ export class Group extends Document {
     default: [],
   })
   landmarks: { latitude: number; longitude: number }[];
+
+  @Prop({ required: true })
+  shareUrl: string;
 }
 
 const GroupSchema = SchemaFactory.createForClass(Group);
@@ -80,5 +81,9 @@ GroupSchema.methods.toJSON = function () {
   delete obj._id;
   return obj;
 };
+
+GroupSchema.path('shareUrl').get(function (value) {
+  return `${process.env.NODE_APP_URL}:${process.env.NODE_APP_PORT}/groups/share-${value}`;
+});
 
 export { GroupSchema };

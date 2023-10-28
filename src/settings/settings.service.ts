@@ -43,12 +43,15 @@ export class SettingsService {
     // console.log('setting service get cache');
     let CacheKey = 'CACHE_SETTINGS_';
     if (key != '') CacheKey += key + '_';
+    if (filters?.group || filters?.module) CacheKey += '_';
     if (filters?.group) CacheKey += 'GROUP_' + filters?.group;
     if (filters?.module) CacheKey += 'MODULE_' + filters?.module;
     // console.log('CacheKey: ' + CacheKey);
     return await this.redisService.remember(CacheKey, 3600, async () => {
       // console.log('setting service get cache inside');
       const settings = await this.findAll(filters);
+      // console.log('settings');
+      // console.log(settings);
       return settings[key];
     });
   }

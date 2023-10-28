@@ -1,15 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { GroupDocument } from './schemas/group.schema';
-import { GroupsRepository } from './groups.repository';
+import { GroupsRepository } from './repositories/groups.repository';
 import { generateUniqueCode } from '../utils/helpers';
-import { Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { LandmarkDto } from './dto/landmark.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { SettingsService } from '../settings/settings.service';
 import { GroupUsersService } from './group.users.service';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { UpdateCircleDto } from './dto/update-circle.dto';
+import { UrlsRepository } from './repositories/urls.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Url } from './schemas/url.schema';
 
 // import { SettingsService } from '../settings/settings.service';
 
@@ -17,11 +20,39 @@ import { UpdateCircleDto } from './dto/update-circle.dto';
 export class GroupsService {
   constructor(
     private readonly groupsRepository: GroupsRepository,
+    private readonly urlsRepository: UrlsRepository,
     // private readonly settingsRepository: SettingsRepository,
     private readonly settingsService: SettingsService,
     private readonly groupUsersService: GroupUsersService,
     private readonly i18nService: I18nService, // private readonly settingsService: SettingsService,
+    @InjectModel(Url.name) private urlModel: Model<Url>,
   ) {}
+
+  async shortenUrl(originalUrl: string): Promise<string> {
+    const existingUrl = await this.urlsRepository.findOne({ originalUrl });
+    if (existingUrl) {
+      return existingUrl.shortUrl;
+    }
+    // const shortUrl = ''; // generateShortUrl(); // Implement your shortening algorithm here
+    const shortUrl = await generateUniqueCode(
+      this.urlsRepository,
+      'shortUrl',
+      10,
+    );
+    const newUrl = new this.urlModel({ originalUrl, shortUrl });
+    await newUrl.save();
+    return shortUrl;
+  }
+
+  async getOriginalUrl(shortUrl: string): Promise<string> {
+    const url = await this.urlModel.findOne({ shortUrl }).exec();
+
+    if (url) {
+      return url.originalUrl;
+    } else {
+      return null; // Handle not found case
+    }
+  }
 
   async countUserGroups(userId: Types.ObjectId) {
     return this.groupsRepository.countDocuments({
@@ -72,11 +103,13 @@ export class GroupsService {
     // console.log('CREATE GROUP');
     // console.log(createGroupDto);
     // console.log(code);
-    // console.log(userId);
+    // console.log(userId); //
+    const shareUrl = await this.shortenUrl('groups/join/' + code);
     return this.groupsRepository.create({
       ...createGroupDto,
       code,
       groupOwner: loggedInUserId,
+      shareUrl: shareUrl,
       members: [loggedInUserId],
       groupAdmins: [loggedInUserId],
     });
@@ -407,5 +440,66 @@ export class GroupsService {
     // ]);
     //
     // return groups;
+  }
+
+  transformGroups(groups, excludeKeys: any = [], options = {}) {
+    if (groups == null) {
+      return [];
+    }
+    const transformedGroups = groups.map((group) => {
+      return this.transformGroup(group, excludeKeys, options);
+      // const { shareUrl, ...otherGroupKeys } = group.toObject();
+      // return {
+      //   ...otherGroupKeys,
+      // };
+    });
+    return transformedGroups;
+  }
+
+  transformGroup(group, excludeKeys: any = [], options) {
+    if (group == null) {
+      return [];
+    }
+    // const { shareUrl, ...otherGroupKeys } = group.toObject();
+    // Transform the user and remove the specified keys
+    const userWithoutExcludedKeys = { ...group.toObject() };
+    const shareUrl = userWithoutExcludedKeys['shareUrl'];
+    userWithoutExcludedKeys['share'] = {
+      url: shareUrl,
+      message: options.groupShareMsg,
+    };
+    excludeKeys.forEach((key) => delete userWithoutExcludedKeys[key]);
+    return {
+      ...userWithoutExcludedKeys,
+    };
+  }
+
+  excludeGroupKeys(excludedKeys = []) {
+    const defaultExcludedKeys = [
+      'groupOwner',
+      'shareUrl',
+      'circleRadius',
+      'circleValidTillHours',
+      'isActive',
+      'groupAdmins',
+      'members',
+      'circleUpdatedAt',
+      'circleValidTill',
+      'landmarks',
+      'created',
+      'updated',
+      '__v',
+      '_id',
+      'deepLink',
+    ];
+    const excludedKeysArray = [defaultExcludedKeys, excludedKeys];
+    const uniqueStrings = new Set();
+    for (const arr of excludedKeysArray) {
+      arr.forEach((str) => {
+        uniqueStrings.add(str);
+      });
+    }
+    const mergedArray = Array.from(uniqueStrings);
+    return mergedArray;
   }
 }
