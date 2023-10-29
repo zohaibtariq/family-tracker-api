@@ -24,6 +24,7 @@ import { RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
 import { GroupsModule } from './groups/groups.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { GroupsModule } from './groups/groups.module';
     ScreensModule,
     LanguagesModule,
     GroupsModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
