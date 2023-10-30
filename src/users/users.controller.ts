@@ -150,56 +150,10 @@ export class UsersController {
         new: true,
       },
     );
-    if (
-      updatedUser?.currentLocation?.latitude &&
-      updatedUser?.currentLocation?.longitude
-    ) {
-      const userCurrentLocation = updatedUser.currentLocation;
-      // console.log('groups found of  a user...');
-      const userGroups = await this.groupsService.find(
-        {
-          circleValidTill: { $gt: new Date() },
-          isActive: true,
-          $or: [
-            { groupOwner: userId },
-            { groupAdmins: userId },
-            { members: userId },
-          ],
-        },
-        {},
-      );
-      if (userGroups) {
-        userGroups.forEach((userGroup) => {
-          // console.log(userGroup);
-          if (
-            userGroup.circleCenter.longitude &&
-            userGroup.circleCenter.latitude &&
-            userGroup.circleRadius
-          ) {
-            const circleCenter = userGroup.circleCenter;
-            const circleRadius = userGroup.circleRadius;
-            const distance = this.haversine(
-              userCurrentLocation.latitude,
-              userCurrentLocation.longitude,
-              circleCenter.latitude,
-              circleCenter.longitude,
-            );
-            console.log('circleRadius: ' + circleRadius);
-            console.log('distance: ' + distance);
-            if (distance > circleRadius) {
-              console.log('You are outside the circle boundary!');
-              // TODO V1 need to trigger notification required clarification from ABDULLAH whom to notify and how how
-            } else {
-              console.log('You are inside the circle boundary.');
-            }
-          }
-        });
-      } else {
-        console.log('groups not found of  a user...');
-      }
-    } else {
-      console.log('user location is not found...');
-    }
+    await this.groupsService.checkAndNotifyUserOwnerIfUserIsOutsideCircle(
+      userId,
+      updatedUser,
+    );
     return this.responseService.response(res, updatedUser);
   }
 
@@ -240,21 +194,6 @@ export class UsersController {
   //     alert('You are inside the circle boundary.');
   //   }
   // }
-
-  haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Radius of the Earth in km
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance * 1000; // Distance in meters
-  }
 
   // @Get('user-admin-superadmin')
   // async userAdminSuperGuard(

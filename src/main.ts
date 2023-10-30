@@ -15,6 +15,8 @@ import * as passport from 'passport';
 import { ValidationPipe } from '@nestjs/common';
 // import { I18nMiddleware } from './i18n.middleware';
 import { I18nMiddleware } from 'nestjs-i18n';
+// import { AccessTokenGuard } from './otp/guards/accessToken.guard';
+// import { IoAdapter } from '@nestjs/platform-socket.io';
 // import { ExpressAdapter } from '@nestjs/platform-express';
 // import * as express from 'express';
 // import * as bodyParser from 'body-parser';
@@ -35,6 +37,13 @@ async function bootstrap() {
       abortOnError: false,
     },
   );
+  app.enableCors({
+    // origin: ['http://localhost:3000'],
+    origin: '*', // TODO just add your frontend client domain ip port * is wrong
+    credentials: true,
+  });
+  // app.useWebSocketAdapter(new IoAdapter(app));
+  // app.useGlobalGuards(new AccessTokenGuard());
   app.use(I18nMiddleware);
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalFilters(new GenericExceptionFilter(new ResponseService()));

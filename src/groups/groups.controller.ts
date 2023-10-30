@@ -140,7 +140,7 @@ export class GroupsController {
     return this.responseService.response(
       res,
       this.groupsService.transformGroups(
-        await this.groupsService.findGroupsForUser(req.user.id),
+        await this.groupsService.findGroupsOfUser(req.user.id),
         this.groupsService.excludeGroupKeys(['groupOwnerFamilyRole', 'share']),
         { groupShareMsg },
       ),
