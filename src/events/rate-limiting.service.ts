@@ -9,24 +9,24 @@ interface RateLimitData {
 export class RateLimitingService {
   private rateLimitMap: Map<string, RateLimitData> = new Map();
 
-  // NOTE almost realtime
-  private messageLimit = 1; // Maximum 1 message per 5 seconds
+  // NOTE almost realtime (REMEMBER in this app we might expect two joingroup and location update simultaneously so atleast min allow two messages)
+  private messageLimit = 5; // Maximum 1 message per 5 seconds
   private timeLimit = 5000; // 5 seconds in milliseconds
 
   // NOTE little delay
-  // private messageLimit = 1; // Maximum 1 message per 10 seconds
+  // private messageLimit = 5; // Maximum 5 message per 10 seconds
   // private timeLimit = 10000; // 10 seconds in milliseconds
 
   // NOTE slow update
-  // private messageLimit = 1; // Maximum 1 message per 15 seconds
+  // private messageLimit = 5; // Maximum 5 message per 15 seconds
   // private timeLimit = 15000; // 15 seconds in milliseconds
 
   // NOTE more slow update
-  // private messageLimit = 1; // Maximum 1 message per 30 seconds
+  // private messageLimit = 5; // Maximum 5 message per 30 seconds
   // private timeLimit = 30000; // 30 seconds in milliseconds
 
   // NOTE most slow update
-  // private messageLimit = 1; // Maximum 1 message per 60 seconds
+  // private messageLimit = 5; // Maximum 5 message per 60 seconds
   // private timeLimit = 60000; // 60 seconds in milliseconds
 
   checkRateLimit(clientId: string): boolean {

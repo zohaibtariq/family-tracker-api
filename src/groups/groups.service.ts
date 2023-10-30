@@ -508,6 +508,9 @@ export class GroupsService {
     updatedUser,
     callback = null,
   ) {
+    console.log('checkAndNotifyUserOwnerIfUserIsOutsideCircle');
+    console.log(userId);
+    console.log(updatedUser);
     if (
       updatedUser?.currentLocation?.latitude &&
       updatedUser?.currentLocation?.longitude
@@ -516,6 +519,7 @@ export class GroupsService {
       // console.log('groups found of  a user...');
       const userGroups = await this.find(
         {
+          _id: new Types.ObjectId('6536e60ffdb8045c0fd1243c'),
           circleValidTill: { $gt: new Date() },
           isActive: true,
           $or: [
@@ -532,15 +536,18 @@ export class GroupsService {
           groupOwner: 1,
         },
       );
+      console.log('user groups count : ' + userGroups?.length);
       if (userGroups) {
         userGroups.forEach((userGroup) => {
           // console.log(userGroup);
           const groupId = userGroup?.id || userGroup?._id;
+          if (callback) callback(groupId);
           if (
-            userGroup.circleCenter.longitude &&
-            userGroup.circleCenter.latitude &&
-            userGroup.circleRadius
+            userGroup?.circleCenter?.longitude &&
+            userGroup?.circleCenter?.latitude &&
+            userGroup?.circleRadius
           ) {
+            console.log('VALID GROUP : ' + groupId);
             const circleCenter = userGroup.circleCenter;
             const circleRadius = userGroup.circleRadius;
             const distance = this.haversine(
@@ -554,11 +561,10 @@ export class GroupsService {
             if (distance > circleRadius) {
               console.log('You are outside the circle boundary!');
               // TODO V1 need to trigger notification to group owner and to user who is outside the boundary
-              if (callback) callback(groupId);
             } else {
               console.log('You are inside the circle boundary.');
             }
-          }
+          } else console.log('INVALID GROUP : ' + groupId);
         });
       } else {
         console.log('groups not found of  a user...');

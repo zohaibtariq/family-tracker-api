@@ -34,6 +34,9 @@ export class UsersService {
     updateUserDto: object,
     options = {},
   ): Promise<UserDocument> {
+    // console.log('update');
+    // console.log(id);
+    // console.log(updateUserDto);
     return this.usersRepository.findByIdAndUpdate(id, updateUserDto, options);
   }
 
