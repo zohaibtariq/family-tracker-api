@@ -85,8 +85,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   @UseInterceptors(RateLimitInterceptor)
   handleJoinGroup(client: Socket, data: { groupId: string }) {
     // TODO only one user can join one group at a time
-    console.log('joinGroup');
-    console.log(data);
+    // console.log('joinGroup');
+    // console.log(data);
     if (!this.isClientInGroup(client, data.groupId)) client.join(data.groupId); // NOTE user joined a group
   }
 
