@@ -33,11 +33,11 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
   ) {}
 
   afterInit(server: Server) {
-    console.log('WebSocket Gateway initialized');
+    // console.log('WebSocket Gateway initialized');
   }
 
   async handleConnection(client: any, ...args: any[]) {
-    console.log('handleConnection');
+    // console.log('handleConnection');
     // return true; // TODO remove it
     // console.log(client);
     // console.log(client.id);
@@ -66,7 +66,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     if (connectionErrorMessage !== '') {
       client.emit('connectionError', connectionErrorMessage);
       client.disconnect();
-    } else console.log('connected!');
+    }
+    // else console.log('connected!');
   }
 
   isClientInGroup(client: Socket, groupId: string): boolean {
@@ -92,8 +93,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
 
   @SubscribeMessage('leaveGroup')
   handleLeaveRoom(client: Socket, data: { groupId: string }) {
-    console.log('leaveGroup');
-    console.log(data);
+    // console.log('leaveGroup');
+    // console.log(data);
     if (this.isClientInGroup(client, data.groupId)) client.leave(data.groupId); // NOTE user left a group
   }
 
@@ -103,8 +104,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
     client: Socket,
     data: { groupId: string; userId: string; currentLocation: any },
   ) {
-    console.log('updateLocation');
-    console.log(data);
+    // console.log('updateLocation');
+    // console.log(data);
     const updatedUser = await this.usersService.update(
       new Types.ObjectId(data.userId),
       {
@@ -119,8 +120,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection {
       data.userId,
       updatedUser,
       (groupId) => {
-        console.log('CALLBACK');
-        console.log(groupId);
+        // console.log('CALLBACK');
+        // console.log(groupId);
         try {
           // NOTE do not enable this block i have tested and verified that group join from client is important and the client which is actually doing firing updateUserLocation will not receive userLocationUpdate event while other clients which have joined will do.
           // if (!this.isClientInGroup(client, groupId)) {

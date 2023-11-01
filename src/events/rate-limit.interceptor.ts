@@ -12,12 +12,12 @@ export class RateLimitInterceptor implements NestInterceptor {
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<any> {
     // ): Promise<Observable<any>> {
-    console.log('RateLimitInterceptor');
+    // console.log('RateLimitInterceptor');
     const client = context.switchToWs().getClient();
     const clientId = client.id;
 
     if (!this.rateLimitingService.checkRateLimit(clientId)) {
-      console.log('Rate limit exceeded');
+      // console.log('Rate limit exceeded');
       // The client has exceeded the rate limit, handle accordingly
       client.emit('rateLimitExceeded', 'Rate limit exceeded');
       return [];
