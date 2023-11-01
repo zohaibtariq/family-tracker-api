@@ -508,9 +508,9 @@ export class GroupsService {
     updatedUser,
     callback = null,
   ) {
-    console.log('checkAndNotifyUserOwnerIfUserIsOutsideCircle');
-    console.log(userId);
-    console.log(updatedUser);
+    // console.log('checkAndNotifyUserOwnerIfUserIsOutsideCircle');
+    // console.log(userId);
+    // console.log(updatedUser);
     if (
       updatedUser?.currentLocation?.latitude &&
       updatedUser?.currentLocation?.longitude
