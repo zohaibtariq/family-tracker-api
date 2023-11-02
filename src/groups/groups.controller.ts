@@ -34,6 +34,9 @@ import { addHours } from 'date-fns';
 @UseGuards(AccessTokenGuard, ValidUserGuard)
 @Controller('groups')
 export class GroupsController {
+  /*
+  TODO Group settings brainstorm it do we really need it there and in group detail api instead of providing objects just generate keys true false which will auto check user role rights and group permission it will be easy for app to integrate it
+   */
   constructor(
     private readonly groupsService: GroupsService,
     private readonly groupUsersService: GroupUsersService,
