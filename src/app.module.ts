@@ -25,6 +25,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
 import { GroupsModule } from './groups/groups.module';
 import { EventsModule } from './events/events.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { EventsModule } from './events/events.module';
     LanguagesModule,
     GroupsModule,
     EventsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
