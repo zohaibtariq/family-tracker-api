@@ -30,7 +30,7 @@ export class RateLimitingService {
   // private timeLimit = 60000; // 60 seconds in milliseconds
 
   checkRateLimit(clientId: string): boolean {
-    console.log('RateLimitingService');
+    // console.log('RateLimitingService');
     const now = Date.now();
     const rateLimitData = this.rateLimitMap.get(clientId);
 
