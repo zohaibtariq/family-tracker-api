@@ -21,6 +21,7 @@ export class SettingsController {
       "friend": "en-US: Friend"
     }
   }
+  do it same like countries and languages
   TODO there are many other areas to improve same as mentioned here
   */
   constructor(
