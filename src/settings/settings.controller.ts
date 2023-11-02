@@ -9,6 +9,20 @@ import { RedisService } from '../redis.service';
 // @UseGuards(AccessTokenGuard)
 @Controller('settings')
 export class SettingsController {
+  /*
+  TODO need to convert to proper array of objects from an object as discussed in last meeting for example
+  {
+    "group_family_roles": {
+      "mother": "en-US: Mother",
+      "father": "en-US: Father",
+      "grand_father": "en-US: Grand Father",
+      "grand_mother": "en-US: Grand Mother",
+      "sibling": "en-US: Sibling",
+      "friend": "en-US: Friend"
+    }
+  }
+  TODO there are many other areas to improve same as mentioned here
+  */
   constructor(
     private readonly settingsService: SettingsService,
     private readonly responseService: ResponseService,

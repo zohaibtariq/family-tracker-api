@@ -4,12 +4,14 @@ import { UpdateDashboardDto } from './dto/update-dashboard.dto';
 
 @Injectable()
 export class DashboardService {
+  constructor() {}
+
   create(createDashboardDto: CreateDashboardDto) {
     return 'This action adds a new dashboard';
   }
 
   findAll() {
-    return `This action returns all dashboard`;
+    return [];
   }
 
   findOne(id: number) {

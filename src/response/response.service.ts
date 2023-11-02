@@ -1,6 +1,13 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Response } from 'express';
 
+interface Meta {
+  totalItems: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 @Injectable()
 export class ResponseService {
   response(
@@ -8,13 +15,36 @@ export class ResponseService {
     data: any = {} || [],
     message: string = '',
     statusCode: number = HttpStatus.OK,
+    meta: Meta = {
+      totalItems: 0,
+      itemsPerPage: 0,
+      currentPage: 0,
+      totalPages: 0,
+    },
   ) {
-    // TODO ASK APP TEAM is it possible if my response data has some time [] and {} ???
-    return res.status(statusCode).json({
-      status: this.getStatus(statusCode),
-      data,
+    const isDataArray = Array.isArray(data);
+    const status = this.getStatus(statusCode);
+    const responseData = {
+      status: status,
+      // data: isDataArray ? { items: data } : { item: data },
+      data: isDataArray ? { items: data } : data,
       message,
-    });
+    };
+    if (
+      isDataArray &&
+      meta?.totalItems &&
+      meta?.itemsPerPage &&
+      meta?.currentPage &&
+      meta?.totalPages
+    ) {
+      responseData['meta'] = {
+        totalItems: meta?.totalItems,
+        itemsPerPage: meta?.itemsPerPage,
+        currentPage: meta?.currentPage,
+        totalPages: meta?.totalPages,
+      };
+    }
+    return res.status(statusCode).json(responseData);
   }
 
   getStatus(statusCode) {
