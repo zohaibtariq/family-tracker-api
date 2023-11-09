@@ -176,12 +176,6 @@ export class OtpController {
           this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN_SEC'),
         ),
       ); // Blacklist token for TIME expiry of access token as defined in .env
-      // await this.redis.set(
-      //   token,
-      //   'revoked',
-      //   'EX',
-      //   this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN_SEC'),
-      // ); // Blacklist token for TIME expiry of access token as defined in .env
     }
     await this.otpService.logout(req.user.id);
     return this.responseService.response(res, {}, '', HttpStatus.NO_CONTENT);
