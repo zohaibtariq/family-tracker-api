@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Get,
   HttpException,
   HttpStatus,
   Post,
@@ -188,7 +187,7 @@ export class OtpController {
     return this.responseService.response(res, {}, '', HttpStatus.NO_CONTENT);
   }
 
-  @Get('refresh')
+  @Post('refresh')
   // @Roles('user', 'admin', 'superadmin') // NOTE allowed globally irrespective of what role they have
   @UseGuards(RefreshTokenGuard, ValidUserGuard) // NOTE do not move ValidUserGuard at top by thinking it is defined over every route by sequence this requires req.user to work properly and it is injected by RefreshTokenGuard here
   async refreshTokens(@Req() req: RequestUserInterface, @Res() res: Response) {
