@@ -103,7 +103,7 @@ export class GroupsService {
     // console.log('CREATE GROUP');
     // console.log(createGroupDto);
     // console.log(code);
-    // console.log(userId); //
+    // console.log(userId);
     const shareUrl = await this.shortenUrl('groups/join/' + code);
     return this.groupsRepository.create({
       ...createGroupDto,
